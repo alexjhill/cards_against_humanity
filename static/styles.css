@@ -1,0 +1,16 @@
+
+.card {
+    height: 400px;
+    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.14);
+    transition: .2s;
+} .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 4px 15px 0px rgba(0, 0, 0, 0.14);
+    transition: .2s;
+} .card a {
+    height: 100%;
+    width: 100%;
+    color: #212121;
+} .card a:hover {
+    text-decoration: none;
+}

@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<form action="/add_cards" method="POST">
+    <div class="form-group">
+        <label for="card-text">Card text</label>
+        <textarea type="text" class="form-control" name="card-text" id="card-text" aria-describedby="card-text" placeholder="Enter card text"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+{% endblock %}
