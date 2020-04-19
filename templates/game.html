@@ -2,13 +2,15 @@
 
 {% block content %}
 
-{% for card in user_cards %}
-<div class="card" style="width: 18rem;">
-    <a href="/play_card">
-        <div class="card-body">
-            <h5 class="card-title">{{ card.description }}</h5>
-        </div>
-    </a>
+<div class="row">
+    {% for card in cards %}
+    <div class="card">
+        <a href="/play_card">
+            <div class="card-body">
+                <h5 class="card-title">{{ card.text }}</h5>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
 </div>
-{% endfor %}
 {% endblock %}
