@@ -1,12 +1,36 @@
+.fish {
+    background: red;
+}
 
-.card {
-    width: 230px;
+
+.black-card {
+    background: #212121;
+    color: #fff;
+}
+
+.cards {
+    display: flex;
+    position: relative;
+    list-style: none;
+    width: calc(100% - 220px);
+    padding: 20px 10% 20px 0;
+    margin: 0 auto;
+} .cards li {
+    width: 10%;
+    transition: .2s;
+} .cards li:hover ~ li {
+    transform: translateX(50px);
+    transition: .2s;
+} .cards li:hover:not(:last-of-type) {
+    transform: translateX(-50px);
+} .card {
+    width: 220px;
     height: 300px;
     box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.14);
     transition: .2s;
-} .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0px 4px 15px 0px rgba(0, 0, 0, 0.14);
+} .deck-card:hover {
+    box-shadow: 0px 2px 15px 2px #a1ed9e;
+    border-color: #a1ed9e;
     transition: .2s;
 } .card a {
     height: 100%;

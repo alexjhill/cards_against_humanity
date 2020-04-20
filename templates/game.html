@@ -2,15 +2,36 @@
 
 {% block content %}
 
-<div class="row">
-    {% for card in cards %}
-    <div class="card">
-        <a href="/play_card">
+<div class="row justify-content-md-center my-3">
+    <div class="col col-md-3">
+        <div class="card black-card">
             <div class="card-body">
-                <h5 class="card-title">{{ card.text }}</h5>
+                <h5 class="card-title">Test</h5>
             </div>
-        </a>
+        </div>
     </div>
-    {% endfor %}
+    <ul class="col col-md-3">
+        {% for player in players %}
+        <!-- <li>{{ player.name }}</li> -->
+        {% endfor %}
+        <li>Alex</li>
+        <li>Peter</li>
+        <li>Stephen</li>
+    </ul>
 </div>
+
+
+<ul class="cards">
+    {% for card in cards %}
+    <li>
+        <div class="card deck-card">
+            <a href="{{ url_for('play_card', card_id = card._id) }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ card.text }}</h5>
+                </div>
+            </a>
+        </div>
+    </li>
+    {% endfor %}
+</ul>
 {% endblock %}

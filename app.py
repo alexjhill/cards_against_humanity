@@ -39,19 +39,19 @@ def add_cards():
         return render_template("add-cards.html")
 
 @app.route('/set_name', methods=['GET', 'POST'])
-def set_name(): # set user name if user hasn't done so before
+def set_name(): # set player name if player hasn't done so before
     if request.method == 'POST':
         name = request.form.get("name")
-        user_id = create_id(8)
-        user = {
-            "_id": user_id,
+        player_id = create_id(8)
+        player = {
+            "_id": player_id,
             "name": name,
             "cards": []
         }
-        db.users.insert_one(user)
+        db.players.insert_one(player)
         game_id = request.cookies.get('game_id')
         resp = make_response(redirect(url_for("game", game_id = game_id)))
-        resp.set_cookie('user_id', user_id)
+        resp.set_cookie('player_id', player_id)
         return resp
     else:
         return render_template("set-name.html")
@@ -62,7 +62,7 @@ def new_game():
     while db.games.find_one({"_id": game_id}) is not None:
         logger.warning("Game ID already exists")
         game_id = create_id(5)
-    new_game = {"_id": game_id, "users" : []}
+    new_game = {"_id": game_id, "players" : []}
     db.games.insert_one(new_game)
     return redirect(url_for("game", game_id = game_id))
 
@@ -70,27 +70,35 @@ def new_game():
 
 @app.route('/game/<game_id>')
 def game(game_id):
-    user_id = request.cookies.get('user_id')
-    # if user has not been here before
-    if user_id is None:
+    is_card_tzar = False
+    player_id = request.cookies.get('player_id')
+    # if player has not been here before
+    if player_id is None:
         # create new name
         response = redirect(url_for("set_name"))
         response.set_cookie('game_id', game_id)
         return response
     else:
-        # add user to game
-        user = db.users.find_one({"_id": user_id})
-        db.games.update({"_id": game_id}, {"$push": {"users": user}})
+        # add player to game
+        player = db.players.find_one({"_id": player_id})
+        db.games.update({"_id": game_id}, {"$push": {"players": player}})
 
         # get game object
         game = db.games.find_one({"_id": game_id})
 
-        # get users
-        users = game.get("users")
-        if not user.get("cards"):
+        # get players
+        players = game.get("players")
+        if not player.get("cards"):
             random_cards = []
-            for i in range(0, db.cards.count()):
-                random_cards.append(db.cards.find().skip(i).limit(1)[0])
-            db.users.update_one({"_id": user_id}, {"$set": {"cards": random_cards}})
-        cards = db.users.find_one({"_id": user_id}).get("cards")
-        return render_template("game.html", game = game, users = users, cards = cards)
+            for i in range(0, 10):
+                rand = random.randint(0, db.cards.count())
+                random_cards.append(db.cards.find().skip(rand).limit(1)[0])
+            db.players.update_one({"_id": player_id}, {"$set": {"cards": random_cards}})
+        cards = db.players.find_one({"_id": player_id}).get("cards")
+        return render_template("game.html", game = game, players = players, cards = cards, is_card_tzar = is_card_tzar)
+
+
+@app.route('/game/play_card')
+def play_card(card_id):
+    game_id = request.cookies.get('game_id')
+    redirect(url_for("game"), game_id = game_id)

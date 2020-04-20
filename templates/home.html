@@ -1,20 +1,23 @@
 {% extends 'layout.html' %}
 {% block content %}
-<div class="jumbotron">
-    <h1 class="display-4">Cards Against Humanity</h1>
-    <p class="lead">This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.</p>
-    <hr class="my-4">
-    <p>It uses utility classes for typography and spacing to space content out within the larger container.</p>
-    <form action="find_game" method="POST" class="form-inline">
-        <div class="form-group mb-2">
-            <label for="enter-game-code" class="sr-only">Enter game code</label>
-            <input type="text" class="form-control form-control-lg mr-2" name="enter-game-code" id="enter-game-code" aria-describedby="enter-game-code" placeholder="E.G. fa2F1">
-        </div>
-        <button type="submit" class="btn btn-primary btn-lg mb-2">Find!</button>
-    </form>
-    <p class="lead">
-        <a class="btn btn-primary btn-lg"href="/new_game" role="button">Start new game</a>
-        <a class="btn btn-secondary btn-lg"href="/add_cards" role="button">Add new cards</a>
-    </p>
+
+<div class="container mt-5">
+    <div class="jumbotron">
+        <h1 class="display-4">Cards Against Humanity</h1>
+        <p class="lead">This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.</p>
+        <hr class="my-4">
+        <p>It uses utility classes for typography and spacing to space content out within the larger container.</p>
+        <form action="find_game" method="POST" class="form-inline">
+            <div class="form-group mb-2">
+                <label for="enter-game-code" class="sr-only">Enter game code</label>
+                <input type="text" class="form-control form-control-lg mr-2" name="enter-game-code" id="enter-game-code" aria-describedby="enter-game-code" placeholder="E.G. fa2F1">
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg mb-2">Find!</button>
+        </form>
+        <p class="lead">
+            <a class="btn btn-primary btn-lg"href="/new_game" role="button">Start new game</a>
+            <a class="btn btn-secondary btn-lg"href="/add_cards" role="button">Add new cards</a>
+        </p>
+    </div>
 </div>
 {% endblock %}
