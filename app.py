@@ -58,6 +58,8 @@ def set_name(): # set player name if player hasn't done so before
 
 @app.route('/new_game')
 def new_game():
+    player_id = request.cookies.get('player_id')
+    db.players.update_one({"_id": player_id}, {"$set": {"cards": []}})
     game_id = create_id(5)
     while db.games.find_one({"_id": game_id}) is not None:
         logger.warning("Game ID already exists")

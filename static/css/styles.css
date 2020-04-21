@@ -28,7 +28,9 @@
     height: 300px;
     box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.14);
     transition: .2s;
-} .deck-card:hover {
+} .hand-card {
+    cursor: pointer;   
+} .hand-card:hover {
     box-shadow: 0px 2px 15px 2px #a1ed9e;
     border-color: #a1ed9e;
     transition: .2s;

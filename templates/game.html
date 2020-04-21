@@ -10,28 +10,12 @@
             </div>
         </div>
     </div>
-    <ul class="col col-md-3">
-        {% for player in players %}
-        <!-- <li>{{ player.name }}</li> -->
-        {% endfor %}
-        <li>Alex</li>
-        <li>Peter</li>
-        <li>Stephen</li>
+    <ul class="col col-md-3" id="leaderboard">
     </ul>
 </div>
 
 
-<ul class="cards">
-    {% for card in cards %}
-    <li>
-        <div class="card deck-card">
-            <a href="{{ url_for('play_card', card_id = card._id) }}">
-                <div class="card-body">
-                    <h5 class="card-title">{{ card.text }}</h5>
-                </div>
-            </a>
-        </div>
-    </li>
-    {% endfor %}
-</ul>
+<div id="hand-cards">
+
+</div>
 {% endblock %}
