@@ -11,7 +11,7 @@ class Leaderboard extends React.Component {
     componentDidMount() {
         // get players
         this.fetchPlayers();
-        // this.timer = setInterval(() => this.fetchPlayers(), 5000);
+        this.timer = setInterval(() => this.fetchPlayers(), 5000);
     }
 
     // function which is called when component about to be removed

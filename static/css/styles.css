@@ -9,20 +9,22 @@
     margin: 0;
 }
 
-.cards {
+
+#hand-cards {
     display: flex;
     position: relative;
     list-style: none;
-    width: calc(100% - 220px);
-    padding: 20px 10% 20px 0;
+    width: calc(100%);
+    padding: 20px calc(10% + 220px) 20px 10%;
     margin: 0 auto;
-} .cards li {
+    overflow-x: hidden;
+} #hand-cards li {
     width: 10%;
     transition: .2s;
-} .cards li:hover ~ li {
+} #hand-cards li:hover ~ li {
     transform: translateX(100px);
     transition: .2s;
-} .cards li:hover:not(:last-of-type) {
+} #hand-cards li:hover:not(:last-of-type) {
     transform: translateX(-50px);
 } .card {
     width: 220px;

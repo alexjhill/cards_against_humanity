@@ -20,6 +20,8 @@
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 
+    <script src="{{ url_for('static', filename='js/utils.js') }}" type="text/JavaScript"></script>
+
 
     <!-- Load React. -->
     <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
@@ -28,14 +30,6 @@
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <!-- Axios -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
-
-    <!-- Load our React component. -->
-    <script src="{{ url_for('static', filename='js/leaderboard.js') }}" type="text/babel"></script>
-    <script src="{{ url_for('static', filename='js/cards.js') }}" type="text/babel"></script>
-
-    <script src="{{ url_for('static', filename='js/utils.js') }}" type="text/JavaScript"></script>
-
 
 </body>
 </html>

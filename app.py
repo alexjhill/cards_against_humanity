@@ -19,11 +19,11 @@ db = client['cards-against-humanity']
 
 
 def create_id(id_length):
-    game_id = ''
+    id = ''
     characters = "ABCDEFGHIJKLMOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890"
     for i in range(id_length):
-        game_id += random.choice(characters)
-    return game_id
+        id += random.choice(characters)
+    return id
 
 
 
@@ -64,15 +64,20 @@ def set_name(): # set player name if player hasn't done so before
         return render_template("set-name.html")
 
 @app.route('/new_game')
-def new_game():
+def new_game(): # create new game
     player_id = request.cookies.get('player_id')
+
+    # reset players cards
     db.players.update_one({"_id": player_id}, {"$set": {"cards": []}})
+
+    # create new unique game
     game_id = create_id(5)
     while db.games.find_one({"_id": game_id}) is not None:
         logger.warning("Game ID already exists")
         game_id = create_id(5)
-    new_game = {"_id": game_id}
+    new_game = {"_id": game_id, "played_cards": []}
     db.games.insert_one(new_game)
+
     return redirect(url_for("game", game_id = game_id))
 
 
@@ -90,7 +95,7 @@ def game(game_id):
             resp.set_cookie('game_id', game_id)
             return resp
         else:
-            # add player to game
+            # add game to player
             db.players.update_one({"_id": player_id}, {"$set": {"game": game_id}})
             resp = make_response(render_template("game.html"))
             resp.set_cookie('game_id', game_id)
@@ -100,12 +105,12 @@ def game(game_id):
 
 
 @app.route('/game/<game_id>/get_players')
-def get_players(game_id):
+def get_players(game_id): # return all players matching this game
     players = list(db.players.find({"game": game_id}))
-    return json.dumps(players,default=json_util.default)
+    return json.dumps(players, default=json_util.default)
 
 @app.route('/game/<game_id>/get_cards')
-def get_cards(game_id):
+def get_cards(game_id): # return cards for this player
     player_id = request.cookies.get('player_id')
     player = db.players.find_one({"_id": player_id})
 
@@ -114,15 +119,46 @@ def get_cards(game_id):
         random_cards = []
         for i in range(0, 10):
             rand = random.randint(0, db.cards.count())
-            random_cards.append(db.cards.find().skip(rand).limit(1)[0])
+            random_card = db.cards.find().skip(rand).limit(1)[0]
+            random_cards.append(random_card)
         db.players.update_one({"_id": player_id}, {"$set": {"cards": random_cards}})
-    cards = db.players.find_one({"_id": player_id}).get("cards")
-    return json.dumps(cards,default=json_util.default)
 
-@app.route('/game/<game_id>/play_card')
-def play_card(card_id):
-    game_id = request.cookies.get('game_id')
-    redirect(url_for("game"), game_id = game_id)
+    # get player cards
+    cards = db.players.find_one({"_id": player_id}).get("cards")
+    return json.dumps(cards, default=json_util.default)
+
+@app.route('/game/<game_id>/play_card', methods=['POST'])
+def play_card(game_id):
+    player_id = request.cookies.get('player_id')
+
+    # get played card
+    card_play = json.loads(request.data)
+    db.games.update_one({"_id": game_id}, {"$push": {"played_cards": card_play}})
+
+    # remove played card
+    db.players.update_one({"_id": player_id}, {"$pull": {"cards": {"_id": card_play.get("card_id")}}})
+
+    # try to add new card until it's unique
+    while True:
+        try:
+            rand = random.randint(0, db.cards.count())
+            new_card = db.cards.find().skip(rand).limit(1)[0]
+            db.players.update_one({"_id": player_id}, {"$push": {"cards": new_card}})
+            break
+        except Foo:
+            logger.warning("Duplicate card found")
+            continue
+
+    # get updated cards
+    updated_cards = db.players.find_one({"_id": player_id}).get("cards")
+
+    return json.dumps(updated_cards,default=json_util.default)
+
+
+@app.route('/game/<game_id>/new_round')
+def new_round(game_id):
+    # wipe played cards
+    db.games.update_one({"_id": game_id}, {"$push": {"played_cards": []}})
 
 
 # @app.route('/game/remove_player', methods=['POST'])
