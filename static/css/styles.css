@@ -20,7 +20,7 @@
     width: 10%;
     transition: .2s;
 } .cards li:hover ~ li {
-    transform: translateX(50px);
+    transform: translateX(100px);
     transition: .2s;
 } .cards li:hover:not(:last-of-type) {
     transform: translateX(-50px);

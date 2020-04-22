@@ -79,31 +79,37 @@ def new_game():
 
 @app.route('/game/<game_id>')
 def game(game_id):
-    is_card_tzar = False
-    player_id = request.cookies.get('player_id')
-    # if player has not been here before
-    if player_id is None:
-        # create new name
-        response = redirect(url_for("set_name"))
-        response.set_cookie('game_id', game_id)
-        return response
+    game = db.games.find_one({"_id": game_id})
+    if game:
+        is_card_tzar = False
+        player_id = request.cookies.get('player_id')
+        # if player has not been here before
+        if player_id is None:
+            # create new name
+            resp = make_response(redirect(url_for("set_name")))
+            resp.set_cookie('game_id', game_id)
+            return resp
+        else:
+            # add player to game
+            db.players.update_one({"_id": player_id}, {"$set": {"game": game_id}})
+            resp = make_response(render_template("game.html"))
+            resp.set_cookie('game_id', game_id)
+            return resp
     else:
-        # add player to game
-        db.players.update_one({"_id": player_id}, {"$set": {"game": game_id}})
-        return render_template("game.html")
+        return redirect(url_for("home"))
 
 
-@app.route('/game/get_players')
-def get_players():
-    game_id = request.cookies.get('game_id')
+@app.route('/game/<game_id>/get_players')
+def get_players(game_id):
     players = list(db.players.find({"game": game_id}))
     return json.dumps(players,default=json_util.default)
 
-@app.route('/game/get_cards')
-def get_cards():
+@app.route('/game/<game_id>/get_cards')
+def get_cards(game_id):
     player_id = request.cookies.get('player_id')
     player = db.players.find_one({"_id": player_id})
 
+    # if player doesn't have cards get random ones
     if not player.get("cards"):
         random_cards = []
         for i in range(0, 10):
@@ -113,14 +119,14 @@ def get_cards():
     cards = db.players.find_one({"_id": player_id}).get("cards")
     return json.dumps(cards,default=json_util.default)
 
-@app.route('/game/play_card')
+@app.route('/game/<game_id>/play_card')
 def play_card(card_id):
     game_id = request.cookies.get('game_id')
     redirect(url_for("game"), game_id = game_id)
 
 
-@app.route('/game/remove_player', methods=['POST'])
-def remove_player():
-    logger.debug("test")
+# @app.route('/game/remove_player', methods=['POST'])
+# def remove_player():
+    # logger.debug("test")
     # player_id = request.cookies.get('player_id')
     # db.players.update({"_id": player_id}, {"$set": {"game": ""}})
