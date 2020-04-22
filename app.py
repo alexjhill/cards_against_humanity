@@ -2,8 +2,11 @@ from flask import Flask, render_template, request, redirect, url_for, make_respo
 from jinja2 import Template
 import pymongo
 from pymongo import MongoClient, ReturnDocument
+import json
+from bson import json_util
 import random
 import coloredlogs, logging
+
 app = Flask(__name__)
 
 logger = logging.getLogger(__name__)
@@ -24,9 +27,13 @@ def create_id(id_length):
 
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def home():
-    return render_template("home.html")
+    if request.method == 'POST':
+        game_id = request.form.get("game-id")
+        return redirect(url_for("game", game_id = game_id))
+    else:
+        return render_template("home.html")
 
 @app.route('/add_cards', methods=['GET', 'POST'])
 def add_cards():
@@ -64,7 +71,7 @@ def new_game():
     while db.games.find_one({"_id": game_id}) is not None:
         logger.warning("Game ID already exists")
         game_id = create_id(5)
-    new_game = {"_id": game_id, "players" : []}
+    new_game = {"_id": game_id}
     db.games.insert_one(new_game)
     return redirect(url_for("game", game_id = game_id))
 
@@ -82,25 +89,38 @@ def game(game_id):
         return response
     else:
         # add player to game
-        player = db.players.find_one({"_id": player_id})
-        db.games.update({"_id": game_id}, {"$push": {"players": player}})
+        db.players.update_one({"_id": player_id}, {"$set": {"game": game_id}})
+        return render_template("game.html")
 
-        # get game object
-        game = db.games.find_one({"_id": game_id})
 
-        # get players
-        players = game.get("players")
-        if not player.get("cards"):
-            random_cards = []
-            for i in range(0, 10):
-                rand = random.randint(0, db.cards.count())
-                random_cards.append(db.cards.find().skip(rand).limit(1)[0])
-            db.players.update_one({"_id": player_id}, {"$set": {"cards": random_cards}})
-        cards = db.players.find_one({"_id": player_id}).get("cards")
-        return render_template("game.html", game = game, players = players, cards = cards, is_card_tzar = is_card_tzar)
+@app.route('/game/get_players')
+def get_players():
+    game_id = request.cookies.get('game_id')
+    players = list(db.players.find({"game": game_id}))
+    return json.dumps(players,default=json_util.default)
 
+@app.route('/game/get_cards')
+def get_cards():
+    player_id = request.cookies.get('player_id')
+    player = db.players.find_one({"_id": player_id})
+
+    if not player.get("cards"):
+        random_cards = []
+        for i in range(0, 10):
+            rand = random.randint(0, db.cards.count())
+            random_cards.append(db.cards.find().skip(rand).limit(1)[0])
+        db.players.update_one({"_id": player_id}, {"$set": {"cards": random_cards}})
+    cards = db.players.find_one({"_id": player_id}).get("cards")
+    return json.dumps(cards,default=json_util.default)
 
 @app.route('/game/play_card')
 def play_card(card_id):
     game_id = request.cookies.get('game_id')
     redirect(url_for("game"), game_id = game_id)
+
+
+@app.route('/game/remove_player', methods=['POST'])
+def remove_player():
+    logger.debug("test")
+    # player_id = request.cookies.get('player_id')
+    # db.players.update({"_id": player_id}, {"$set": {"game": ""}})

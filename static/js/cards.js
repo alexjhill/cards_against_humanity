@@ -1,19 +1,31 @@
-const cardData = [{_id: "1", text: "Card 1"}, {_id: "2", text: "Card 2"}, {_id: "3", text: "Card 3"}];
-const cards = cardData.map((card) =>
-    <li key={card._id}>
-        <div className="card hand-card" data-cardid="{{ card._id }}" onClick={(e) => this.playCard(id, e)}>
-            <div className="card-body">
-                <h5 className="card-title">{card.text}</h5>
-            </div>
-        </div>
-    </li>
-);
-
 class HandCards extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {cards: "Test"};
+        this.state = {
+            cards: []
+        };
+    }
+
+    // function which is called when component is added
+    componentDidMount() {
+        // get cards
+        this.fetchCards();
+    }
+
+    fetchCards() {
+        this.setState({cards: this.state.cards});
+        // Make a request for cards for player
+        axios.get('/game/get_cards')
+            .then(response => {
+                // handle success
+                this.setState({cards: response.data})
+            })
+            .catch(error => {
+                // handle error
+                console.log(error);
+                this.setState({cards: this.state.players})
+            });
     }
 
     playCard() {
@@ -21,9 +33,14 @@ class HandCards extends React.Component {
     }
 
     render() {
-        return (
-            <ul className="cards">{cards}</ul>
-        );
+        return this.state.cards.map((card) =>
+                <li key={ card._id.$oid }>
+                    <div className="card hand-card" onClick={(e) => this.playCard(id, e)}>
+                        <div className="card-body">
+                            <h5 className="card-title">{ card.text }</h5>
+                        </div>
+                    </div>
+                </li>);
     }
 }
 
