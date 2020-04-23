@@ -2,30 +2,14 @@
 
 {% block content %}
 
-<div class="row justify-content-md-center my-3">
-    <div class="col col-md-3">
-        <div class="card black-card">
-            <div class="card-body">
-                <h5 class="card-title">Test</h5>
-            </div>
-        </div>
-    </div>
-    <div class="col col-md-3">
-        <h3>Scores</h3>
-        <ul id="leaderboard">
-        </ul>
-    </div>
-
-</div>
-
-
-<ul class="cards" id="hand-cards">
-
-</ul>
+<div id="root"></div>
 
 
 <!-- Load our React component. -->
+<script src="{{ url_for('static', filename='js/black-card.js') }}" type="text/babel"></script>
 <script src="{{ url_for('static', filename='js/leaderboard.js') }}" type="text/babel"></script>
 <script src="{{ url_for('static', filename='js/cards.js') }}" type="text/babel"></script>
+<script src="{{ url_for('static', filename='js/root.js') }}" type="text/babel"></script>
+
 
 {% endblock %}

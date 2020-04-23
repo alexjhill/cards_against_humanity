@@ -10,7 +10,7 @@ class Leaderboard extends React.Component {
     // function which is called when component is added
     componentDidMount() {
         // get players
-        this.fetchPlayers();
+        this.fetchPlayers()
         this.timer = setInterval(() => this.fetchPlayers(), 5000);
     }
 
@@ -36,11 +36,14 @@ class Leaderboard extends React.Component {
     }
 
     render() {
-        return this.state.players.map((player) => <li key={ player._id }>{ player.name }</li>);
+        return (
+            this.state.players.map((player) =>
+            <tr key={ player._id }>
+                <td>{ player.state }</td>
+                <td>{ player.name }</td>
+                <td>{ player.score }</td>
+            </tr>
+            )
+        )
     }
 }
-
-ReactDOM.render(
-    <Leaderboard />,
-    document.getElementById('leaderboard')
-);

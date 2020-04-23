@@ -10,7 +10,7 @@ class HandCards extends React.Component {
     // function which is called when component is added
     componentDidMount() {
         // get cards
-        this.fetchCards();
+        this.fetchCards()
         this.timer = setInterval(() => this.fetchCards(), 5000);
     }
 
@@ -21,17 +21,17 @@ class HandCards extends React.Component {
     }
 
     fetchCards() {
-        this.setState({cards: this.state.cards});
         // Make a request for cards for player
         axios.get('/game/' + getCookie("game_id") + '/get_cards')
         .then(response => {
             // handle success
-            this.setState({cards: response.data})
+            this.setState({
+                cards: response.data
+            })
         })
         .catch(error => {
             // handle error
             console.log(error);
-            this.setState({cards: this.state.players})
         });
     }
 
@@ -43,23 +43,34 @@ class HandCards extends React.Component {
         .catch(error => {
             // handle error
             console.log(error);
-            this.setState({cards: this.state.players})
         });
     }
 
     render() {
-        return this.state.cards.map((card) =>
-        <li key={ card._id }>
-            <div className="card hand-card" onClick={(e) => this.playCard(card._id, e)}>
-                <div className="card-body">
-                    <h5 className="card-title">{ card.text }</h5>
-                </div>
-            </div>
-        </li>);
+        if (this.props.gameState == 0 || this.props.gameState == 1) {
+            return (
+                this.state.cards.map((card) =>
+                    <li key={ card._id }>
+                        <div className="card hand-card" onClick={(e) => this.playCard(card._id, e)}>
+                            <div className="card-body">
+                                <h5 className="card-title">{ card.text }</h5>
+                            </div>
+                        </div>
+                    </li>
+                )
+            )
+        } else if (this.props.playerState == 1) {
+            return (
+                <h4>Waiting for other players to play...</h4>
+            )
+        } else if (this.props.gameState == 2) {
+            return (
+                <h4>Waiting for card tzar to pick winner...</h4>
+            )
+        } else {
+            return (
+                <h4>Error...</h4>
+            )
+        }
     }
 }
-
-ReactDOM.render(
-    <HandCards />,
-    document.getElementById('hand-cards')
-);

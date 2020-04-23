@@ -1,3 +1,17 @@
+'''
+GAME STATES
+-1 = error
+0 = black card selection
+1 = card playing
+2 = winner selection
+
+PLAYER STATES
+0 = card playing
+1 = card played
+
+'''
+
+
 from flask import Flask, render_template, request, redirect, url_for, make_response
 from jinja2 import Template
 import pymongo
@@ -39,7 +53,7 @@ def home():
 def add_cards():
     if request.method == 'POST':
         text = request.form.get("card-text")
-        new_card = {"text": text}
+        new_card = {"_id": create_id(24), "text": text}
         db.cards.insert_one(new_card)
         return render_template("add-cards.html")
     else:
@@ -53,7 +67,9 @@ def set_name(): # set player name if player hasn't done so before
         player = {
             "_id": player_id,
             "name": name,
-            "cards": []
+            "cards": [],
+            "state": 0,
+            "score": 0
         }
         db.players.insert_one(player)
         game_id = request.cookies.get('game_id')
@@ -75,7 +91,11 @@ def new_game(): # create new game
     while db.games.find_one({"_id": game_id}) is not None:
         logger.warning("Game ID already exists")
         game_id = create_id(5)
-    new_game = {"_id": game_id, "played_cards": []}
+    new_game = {
+        "_id": game_id,
+        "state": 0,
+        "played_cards": []
+    }
     db.games.insert_one(new_game)
 
     return redirect(url_for("game", game_id = game_id))
@@ -103,6 +123,10 @@ def game(game_id):
     else:
         return redirect(url_for("home"))
 
+@app.route('/game/<game_id>/get_game')
+def get_game(game_id):
+    game = db.games.find_one({"_id": game_id})
+    return json.dumps(game, default=json_util.default)
 
 @app.route('/game/<game_id>/get_players')
 def get_players(game_id): # return all players matching this game
@@ -149,6 +173,9 @@ def play_card(game_id):
             logger.warning("Duplicate card found")
             continue
 
+    # update played state
+    db.players.update_one({"_id": player_id}, {"$set": {"state": 1}})
+
     # get updated cards
     updated_cards = db.players.find_one({"_id": player_id}).get("cards")
 
@@ -159,6 +186,8 @@ def play_card(game_id):
 def new_round(game_id):
     # wipe played cards
     db.games.update_one({"_id": game_id}, {"$push": {"played_cards": []}})
+    # update played state
+    db.players.update_one({"_id": player_id}, {"$set": {"state": 0}})
 
 
 # @app.route('/game/remove_player', methods=['POST'])
