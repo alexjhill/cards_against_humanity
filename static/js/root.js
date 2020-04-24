@@ -4,13 +4,15 @@ class Root extends React.Component {
         this.state = {
             blackCard: "Test",
             gameState: 0,
-            playedCards: []
+            playedCards: [],
+            playerState: 0
         };
     }
 
     // function which is called when component is added
     componentDidMount() {
         // get cards
+        this.fetchGame();
         this.timer = setInterval(() => this.fetchGame(), 5000);
     }
 
@@ -26,9 +28,10 @@ class Root extends React.Component {
         .then(response => {
             // handle success
             this.setState({
-                blackCard: "test",
-                gameState: response.data.state,
-                playedCards: response.data.cards
+                blackCard: response.data[0].black_card,
+                gameState: response.data[0].state,
+                playedCards: response.data[0].played_cards,
+                playerState: response.data[1]
             })
         })
         .catch(error => {
@@ -62,7 +65,7 @@ class Root extends React.Component {
                 </div>
                 <div className="row">
                     <ul id="hand-cards">
-                        <HandCards gameState = { this.state.gameState } />
+                        <HandCards gameState = { this.state.gameState } playerState = { this.state.playerState } />
                     </ul>
                 </div>
             </React.Fragment>

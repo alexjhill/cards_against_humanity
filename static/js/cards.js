@@ -47,7 +47,7 @@ class HandCards extends React.Component {
     }
 
     render() {
-        if (this.props.gameState == 0 || this.props.gameState == 1) {
+        if (this.props.playerState == 0) {
             return (
                 this.state.cards.map((card) =>
                     <li key={ card._id }>

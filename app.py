@@ -106,7 +106,6 @@ def new_game(): # create new game
 def game(game_id):
     game = db.games.find_one({"_id": game_id})
     if game:
-        is_card_tzar = False
         player_id = request.cookies.get('player_id')
         # if player has not been here before
         if player_id is None:
@@ -126,7 +125,10 @@ def game(game_id):
 @app.route('/game/<game_id>/get_game')
 def get_game(game_id):
     game = db.games.find_one({"_id": game_id})
-    return json.dumps(game, default=json_util.default)
+    player_id = request.cookies.get('player_id')
+    player_state = db.players.find_one({"_id": player_id}).get("state")
+    data = [game, player_state]
+    return json.dumps(data, default=json_util.default)
 
 @app.route('/game/<game_id>/get_players')
 def get_players(game_id): # return all players matching this game
@@ -159,8 +161,14 @@ def play_card(game_id):
     card_play = json.loads(request.data)
     db.games.update_one({"_id": game_id}, {"$push": {"played_cards": card_play}})
 
-    # remove played card
-    db.players.update_one({"_id": player_id}, {"$pull": {"cards": {"_id": card_play.get("card_id")}}})
+    # remove played card from player and update played state
+    db.players.update_one(
+        {"_id": player_id},
+        {
+            "$pull": {"cards": {"_id": card_play.get("card_id")}},
+            "$set": {"state": 1}
+        }
+    )
 
     # try to add new card until it's unique
     while True:
@@ -169,23 +177,25 @@ def play_card(game_id):
             new_card = db.cards.find().skip(rand).limit(1)[0]
             db.players.update_one({"_id": player_id}, {"$push": {"cards": new_card}})
             break
-        except Foo:
+        except:
             logger.warning("Duplicate card found")
             continue
 
-    # update played state
-    db.players.update_one({"_id": player_id}, {"$set": {"state": 1}})
-
     # get updated cards
     updated_cards = db.players.find_one({"_id": player_id}).get("cards")
+
+    # if no players left to play, next game state
+    still_to_play = db.players.find({"$and": [{"game": game_id}, {"state": 0}]}).count()
+    if still_to_play == 0:
+        db.games.update_one({"_id": game_id}, {"$set": {"state": 2}})
 
     return json.dumps(updated_cards,default=json_util.default)
 
 
 @app.route('/game/<game_id>/new_round')
 def new_round(game_id):
-    # wipe played cards
-    db.games.update_one({"_id": game_id}, {"$push": {"played_cards": []}})
+    # wipe played cards and reset game state
+    db.games.update_one({"_id": game_id}, {"$set": {"state": 0, "played_cards": []}})
     # update played state
     db.players.update_one({"_id": player_id}, {"$set": {"state": 0}})
 
