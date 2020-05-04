@@ -10,8 +10,6 @@ PLAYER STATES
 1 = card played
 
 '''
-
-
 from flask import Flask, render_template, request, redirect, url_for, make_response
 from jinja2 import Template
 import pymongo
@@ -30,7 +28,6 @@ DB_URI = 'mongodb://admin:password1@ds115573.mlab.com:15573/cards-against-humani
 
 client = MongoClient(DB_URI)
 db = client['cards-against-humanity']
-
 
 def create_id(id_length):
     id = ''
@@ -82,10 +79,6 @@ def set_name(): # set player name if player hasn't done so before
 @app.route('/new_game')
 def new_game(): # create new game
     player_id = request.cookies.get('player_id')
-
-    # reset players cards
-    db.players.update_one({"_id": player_id}, {"$set": {"cards": []}})
-
     # create new unique game
     game_id = create_id(5)
     while db.games.find_one({"_id": game_id}) is not None:
@@ -97,6 +90,20 @@ def new_game(): # create new game
         "played_cards": []
     }
     db.games.insert_one(new_game)
+
+    # set card tzar
+    db.players.update_one({"_id": player_id}, {"$set": {"state": 2}})
+
+    return redirect(url_for("new_round", game_id = game_id))
+
+
+
+@app.route('/game/<game_id>/new_round')
+def new_round(game_id):
+    # wipe played cards and reset game state
+    db.games.update_one({"_id": game_id}, {"$set": {"state": 0, "played_cards": []}})
+    # update players state
+    db.players.update({"game": game_id}, {"$set": {"state": 0}})
 
     return redirect(url_for("game", game_id = game_id))
 
@@ -138,15 +145,16 @@ def get_players(game_id): # return all players matching this game
 @app.route('/game/<game_id>/get_cards')
 def get_cards(game_id): # return cards for this player
     player_id = request.cookies.get('player_id')
-    player = db.players.find_one({"_id": player_id})
 
+    # find cards for this player in this game
+    cards = db.hand_cards.find({"$and": [{"game": game_id}, {"player": player_id}]})
     # if player doesn't have cards get random ones
-    if not player.get("cards"):
+    if cards is empty:
         random_cards = []
         for i in range(0, 10):
             rand = random.randint(0, db.cards.count())
-            random_card = db.cards.find().skip(rand).limit(1)[0]
-            random_cards.append(random_card)
+            random_card = db.deck_cards.find().skip(rand).limit(1)[0]
+            db.hand_cards.update_one({""})
         db.players.update_one({"_id": player_id}, {"$set": {"cards": random_cards}})
 
     # get player cards
@@ -192,12 +200,6 @@ def play_card(game_id):
     return json.dumps(updated_cards,default=json_util.default)
 
 
-@app.route('/game/<game_id>/new_round')
-def new_round(game_id):
-    # wipe played cards and reset game state
-    db.games.update_one({"_id": game_id}, {"$set": {"state": 0, "played_cards": []}})
-    # update played state
-    db.players.update_one({"_id": player_id}, {"$set": {"state": 0}})
 
 
 # @app.route('/game/remove_player', methods=['POST'])
