@@ -10,9 +10,6 @@ PLAYER STATES
 1 = card played
 
 '''
-
-# branch test
-
 from flask import Flask, render_template, request, redirect, url_for, make_response
 from jinja2 import Template
 import pymongo
@@ -27,10 +24,13 @@ app = Flask(__name__)
 logger = logging.getLogger(__name__)
 coloredlogs.install(level='DEBUG', logger=logger)
 
-DB_URI = 'mongodb://admin:password1@ds115573.mlab.com:15573/cards-against-humanity?retryWrites=false'
+# Set these in the environment variables for the function
+db_user = os.environ.get('CLOUD_SQL_USERNAME')
+db_password = os.environ.get('CLOUD_SQL_PASSWORD')
+db_name = os.environ.get('CLOUD_SQL_DATABASE_NAME')
+db_connection_name = os.environ.get('CLOUD_SQL_CONNECTION_NAME')
 
-client = MongoClient(DB_URI)
-db = client['cards-against-humanity']
+logger.debug(db)
 
 def create_id(id_length):
     id = ''
