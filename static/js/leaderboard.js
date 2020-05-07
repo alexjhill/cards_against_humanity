@@ -38,7 +38,7 @@ class Leaderboard extends React.Component {
     render() {
         return (
             this.state.players.map((player) =>
-            <tr key={ player._id }>
+            <tr key={ player.id }>
                 <td>{ player.state }</td>
                 <td>{ player.name }</td>
                 <td>{ player.score }</td>

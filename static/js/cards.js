@@ -36,6 +36,7 @@ class HandCards extends React.Component {
     }
 
     playCard(id, e) {
+        console.log(id)
         axios.post('/game/' + getCookie("game_id") + '/play_card', {
             player: getCookie("player_id"),
             card_id: id
@@ -50,8 +51,8 @@ class HandCards extends React.Component {
         if (this.props.playerState == 0) {
             return (
                 this.state.cards.map((card) =>
-                    <li key={ card._id }>
-                        <div className="card hand-card" onClick={(e) => this.playCard(card._id, e)}>
+                    <li key={ card.id }>
+                        <div className="card hand-card" onClick={(e) => this.playCard(card.id, e)}>
                             <div className="card-body">
                                 <h5 className="card-title">{ card.text }</h5>
                             </div>
