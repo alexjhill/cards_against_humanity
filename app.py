@@ -6,8 +6,10 @@ GAME STATES
 2 = winner selection
 
 PLAYER STATES
+-1 = error
 0 = card playing
 1 = card played
+2 = card tzar
 
 '''
 from flask import Flask, render_template, request, redirect, url_for, make_response
@@ -144,17 +146,6 @@ def new_game(): # create new game
 
 
 
-# @app.route('/game/<game_id>/new_round')
-# def new_round(game_id):
-#     # wipe played cards and reset game state
-#     db.games.update_one({"_id": game_id}, {"$set": {"state": 0, "played_cards": []}})
-#     # update players state
-#     db.players.update({"game": game_id}, {"$set": {"state": 0}})
-#
-#     return redirect(url_for("game", game_id = game_id))
-
-
-
 @app.route('/game/<game_id>')
 def game(game_id):
     game = Game.query.filter_by(id=game_id).first()
@@ -187,7 +178,6 @@ def get_game(game_id):
 
     # convert to JSON and return
     data = [game.as_json(), player_state]
-    logger.debug(data)
     return json.dumps(data)
 
 @app.route('/game/<game_id>/get_players')
@@ -260,6 +250,24 @@ def play_card(game_id):
     return json.dumps(data)
 
 
+@app.route('/game/<game_id>/new_round')
+def new_round(game_id):
+    # wipe played cards and reset game state
+    game = Game.query.filter_by(id=game_id).first()
+    game.state = 0
+
+    # update players state
+    players = Player.query.filter_by(id=game_id).all()
+    for player in players:
+        player.state = 0
+
+    # set new card tzar
+    card_tzar = Player.query.filter_by(id=game_id).first()
+    card_tzar.state = 2
+
+    db.session.commit()
+
+    return redirect(url_for("game", game_id = game_id))
 
 
 # @app.route('/game/remove_player', methods=['POST'])

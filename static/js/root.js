@@ -4,7 +4,6 @@ class Root extends React.Component {
         this.state = {
             blackCard: "Test",
             gameState: 0,
-            playedCards: [],
             playerState: 0
         };
     }
@@ -30,7 +29,6 @@ class Root extends React.Component {
             this.setState({
                 blackCard: response.data[0].black_card,
                 gameState: response.data[0].state,
-                playedCards: response.data[0].played_cards,
                 playerState: response.data[1]
             })
         })
@@ -46,7 +44,7 @@ class Root extends React.Component {
             <React.Fragment>
                 <div className="row justify-content-md-center my-3">
                     <div id="black-card" className="col col-md-4">
-                        <BlackCard text = { this.state.blackCard } gameState = { this.state.gameState } />
+                        <BlackCard text = { this.state.blackCard } gameState = { this.state.gameState } playerState = { this.state.playerState } />
                     </div>
                     <div className="col col-md-4">
                         <table className="table">
