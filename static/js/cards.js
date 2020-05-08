@@ -36,7 +36,6 @@ class HandCards extends React.Component {
     }
 
     playCard(id, e) {
-        console.log(id)
         axios.post('/game/' + getCookie("game_id") + '/play_card', {
             player: getCookie("player_id"),
             card_id: id
@@ -48,30 +47,50 @@ class HandCards extends React.Component {
     }
 
     render() {
-        if (this.props.playerState == 0) {
-            return (
-                this.state.cards.map((card) =>
-                    <li key={ card.id }>
-                        <div className="card hand-card" onClick={(e) => this.playCard(card.id, e)}>
-                            <div className="card-body">
-                                <h5 className="card-title">{ card.text }</h5>
+        if (this.props.gameState == 0) {
+            if (this.props.playerState == 0) {
+                return (
+                    this.state.cards.map((card) =>
+                        <li key={ card.id }>
+                            <div className="card hand-card" onClick={(e) => this.playCard(card.id, e)}>
+                                <div className="card-body">
+                                    <h5 className="card-title">{ card.text }</h5>
+                                </div>
                             </div>
-                        </div>
-                    </li>
+                        </li>
+                    )
                 )
-            )
-        } else if (this.props.playerState == 1) {
-            return (
-                <h4>Waiting for other players to play...</h4>
-            )
-        } else if (this.props.gameState == 2) {
-            return (
-                <h4>Waiting for card tzar to pick winner...</h4>
-            )
-        } else {
-            return (
-                <h4>Error...</h4>
-            )
+            } else if (this.props.playerState == 2) {
+                return <h4>Fish</h4>
+            } else {
+                return <h4>Game state/player state combo error...</h4>
+            }
+        } else if (this.props.gameState == 1) {
+            if (this.props.playerState == 0) {
+                return (
+                    this.state.cards.map((card) =>
+                        <li key={ card.id }>
+                            <div className="card hand-card" onClick={(e) => this.playCard(card.id, e)}>
+                                <div className="card-body">
+                                    <h5 className="card-title">{ card.text }</h5>
+                                </div>
+                            </div>
+                        </li>
+                    )
+                )
+            } else if (this.props.playerState == 1) {
+                return (
+                    <h4>Waiting for other players to play...</h4>
+                )
+            } else if (this.props.playerState == 2) {
+                return (
+                    <h4>Waiting for players to play...</h4>
+                )
+            } else {
+                return (
+                    <h4>Player state error...</h4>
+                )
+            }
         }
     }
 }

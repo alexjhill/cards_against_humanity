@@ -2,9 +2,9 @@ class Root extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            blackCard: "Test",
-            gameState: 0,
-            playerState: 0
+            blackCard: "",
+            gameState: "",
+            playerState: ""
         };
     }
 
@@ -25,11 +25,11 @@ class Root extends React.Component {
         // Make a request for cards for player
         axios.get('/game/' + getCookie("game_id") + '/get_game')
         .then(response => {
+            console.log(response.data[0].state)
             // handle success
             this.setState({
-                blackCard: response.data[0].black_card,
                 gameState: response.data[0].state,
-                playerState: response.data[1]
+                playerState: response.data[1],
             })
         })
         .catch(error => {
@@ -44,7 +44,7 @@ class Root extends React.Component {
             <React.Fragment>
                 <div className="row justify-content-md-center my-3">
                     <div id="black-card" className="col col-md-4">
-                        <BlackCard text = { this.state.blackCard } gameState = { this.state.gameState } playerState = { this.state.playerState } />
+                        <BlackCard gameState = { this.state.gameState } playerState = { this.state.playerState } />
                     </div>
                     <div className="col col-md-4">
                         <table className="table">

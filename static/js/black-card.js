@@ -3,9 +3,67 @@ class BlackCard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            text: this.props.text
+            id: "",
+            text: ""
         };
     }
+
+    // function which is called when component is added
+    componentDidMount() {
+        // get black card
+        if (this.props.gameState === 0) {
+            this.newCard();
+        } else {
+            this.fetchCard();
+        }
+    }
+
+    fetchCard() {
+        // Make a request for random black card
+        axios.get('/game/' + getCookie("game_id") + '/get_black_card')
+        .then(response => {
+            // handle success
+            this.setState({
+                id: response.data.id,
+                text: response.data.text
+            })
+        })
+        .catch(error => {
+            // handle error
+            console.log(error);
+            gameState = -1;
+        });
+    }
+
+    newCard() {
+        console.log("new card")
+        // Make a request for random black card
+        axios.get('/game/' + getCookie("game_id") + '/new_black_card')
+        .then(response => {
+            // handle success
+            this.setState({
+                id: response.data.id,
+                text: response.data.text
+            })
+        })
+        .catch(error => {
+            // handle error
+            console.log(error);
+            gameState = -1;
+        });
+    }
+
+    // set black card
+    pickCard(id, e) {
+        axios.post('/game/' + getCookie("game_id") + '/pick_black_card', {
+            card_id: id
+        })
+        .catch(error => {
+            // handle error
+            console.log(error);
+        });
+    }
+
     render() {
         if (this.props.gameState == 0) {
             if (this.props.playerState == 0) {
@@ -14,15 +72,15 @@ class BlackCard extends React.Component {
                 return <h4>Waiting for card tzar to pick a card...</h4>
             } else if (this.props.playerState == 2) {
                 return (
-                    <div>
-                        <div className="card black-card float-right">
+                    <div className="black-card float-right">
+                        <div className="card">
                             <div className="card-body">
                                 <h5 className="card-title">{ this.state.text }</h5>
                             </div>
                         </div>
-                        <div>
-                            <button onClick={(e) => this.newCard(card.id, e)}>New card</button>
-                            <button onClick={(e) => this.pickCard(card.id, e)}>Pick card</button>
+                        <div className="black-card-btns mt-3">
+                            <button className="btn btn-secondary" onClick={(e) => this.newCard(e)}>New card</button>
+                            <button className="btn btn-primary" onClick={(e) => this.pickCard(this.state.id, e)}>Pick card</button>
                         </div>
                     </div>
 
@@ -32,9 +90,11 @@ class BlackCard extends React.Component {
             }
         } else if (this.props.gameState == 1) {
             return (
-                <div className="card black-card float-right">
-                    <div className="card-body">
-                        <h5 className="card-title">{ this.state.text }</h5>
+                <div className="black-card float-right">
+                    <div className="card">
+                        <div className="card-body">
+                            <h5 className="card-title">{ this.state.text }</h5>
+                        </div>
                     </div>
                 </div>
             )

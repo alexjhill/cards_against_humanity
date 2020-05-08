@@ -7,8 +7,12 @@
 }
 
 .black-card {
+} .black-card .card {
     background: #212121;
     color: #fff;
+} .black-card-btns {
+    display: flex;
+    justify-content: space-around;
 }
 
 #leaderboard {

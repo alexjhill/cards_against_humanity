@@ -59,12 +59,13 @@ class HandCard(db.Model):
 class Game(db.Model):
     id = db.Column(db.String(5), primary_key=True)
     state = db.Column(db.Integer, nullable=False)
+    black_card = db.Column(db.String(24), db.ForeignKey('deck_card.id'), nullable=False)
 
     def __repr__(self):
         return '<Game %r>' % self.id
 
     def as_json(self):
-        return dict(id=self.id, state=self.state)
+        return dict(id=self.id, state=self.state, black_card=self.black_card)
 
 class Player(db.Model):
     id = db.Column(db.String(8), primary_key=True)
@@ -138,7 +139,8 @@ def new_game(): # create new game
     while Game.query.filter_by(id=game_id).first() is not None:
         logger.warning("Game ID already exists")
         game_id = create_id(5)
-    new_game = Game(id=game_id, state=0)
+    black_card = DeckCard.query.filter_by(type=1).order_by(func.random()).first().id
+    new_game = Game(id=game_id, state=0, black_card=black_card)
     db.session.add(new_game)
     db.session.commit()
 
@@ -189,6 +191,27 @@ def get_players(game_id): # return all players matching this game
     for player in players:
         data.append(player.as_json())
     return json.dumps(data)
+
+@app.route('/game/<game_id>/get_black_card')
+def get_black_card(game_id): # return black card for this game
+    game = Game.query.filter_by(id=game_id).first()
+    black_card = DeckCard.query.filter_by(id=game.black_card).first()
+    return black_card.as_json()
+
+@app.route('/game/<game_id>/new_black_card')
+def new_black_card(game_id): # return black card for this game
+    black_card = DeckCard.query.filter_by(type=1).order_by(func.random()).first()
+    return black_card.as_json()
+
+@app.route('/game/<game_id>/pick_black_card', methods=['POST'])
+def pick_black_card(game_id): # pick black card for this game
+    card_id = card_play = json.loads(request.data).get("card_id")
+    black_card = DeckCard.query.filter_by(id=card_id).first()
+    game = Game.query.filter_by(id=game_id).first()
+    game.black_card = black_card.id
+    game.state = 1
+    db.session.commit()
+    return ('', 204)
 
 @app.route('/game/<game_id>/get_cards')
 def get_cards(game_id): # return cards for this player
