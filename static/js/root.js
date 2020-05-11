@@ -4,7 +4,8 @@ class Root extends React.Component {
         this.state = {
             blackCard: "",
             gameState: "",
-            playerState: ""
+            playerState: "",
+            playedCards: []
         };
     }
 
@@ -25,11 +26,11 @@ class Root extends React.Component {
         // Make a request for cards for player
         axios.get('/game/' + getCookie("game_id") + '/get_game')
         .then(response => {
-            console.log(response.data[0].state)
             // handle success
             this.setState({
                 gameState: response.data[0].state,
                 playerState: response.data[1],
+                playedCards: response.data[2]
             })
         })
         .catch(error => {
@@ -63,7 +64,7 @@ class Root extends React.Component {
                 </div>
                 <div className="row">
                     <ul id="hand-cards">
-                        <HandCards gameState = { this.state.gameState } playerState = { this.state.playerState } />
+                        <HandCards gameState = { this.state.gameState } playerState = { this.state.playerState } playedCards = { this.state.playedCards } />
                     </ul>
                 </div>
             </React.Fragment>

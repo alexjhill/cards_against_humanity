@@ -46,6 +46,16 @@ class HandCards extends React.Component {
         });
     }
 
+    pickWinner(playerId, e) {
+        axios.post('/game/' + getCookie("game_id") + '/pick_winner', {
+            player: playerId
+        })
+        .catch(error => {
+            // handle error
+            console.log(error);
+        });
+    }
+
     render() {
         if (this.props.gameState == 0) {
             if (this.props.playerState == 0) {
@@ -89,6 +99,28 @@ class HandCards extends React.Component {
             } else {
                 return (
                     <h4>Player state error...</h4>
+                )
+            }
+        } else if (this.props.gameState == 2) {
+            if (this.props.playerState == 0) { // card playing
+                return (
+                    <h4>Player state error...</h4>
+                )
+            } else if (this.props.playerState == 1) { // card played
+                return (
+                    <h4>Waiting for card tzar to pick a card...</h4>
+                )
+            } else  if (this.props.playerState == 2) { // card tzar
+                return (
+                    this.props.playedCards.map((cardPlay) =>
+                        <li key={ cardPlay.player }>
+                            <div className="card hand-card" onClick={(e) => this.pickWinner(cardPlay.player, e)}>
+                                <div className="card-body">
+                                    <h5 className="card-title">{ cardPlay.card }</h5>
+                                </div>
+                            </div>
+                        </li>
+                    )
                 )
             }
         }

@@ -27,39 +27,36 @@ coloredlogs.install(level='DEBUG', logger=logger)
 
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# db 1
 conn_str = 'mysql+pymysql://unfbbwlp7m40iqvv:Th8cO1VKB9sUy94XFYQg@b1seqbavm975g4dqrctm-mysql.services.clever-cloud.com/b1seqbavm975g4dqrctm'
+# db 2 (backup)
+# conn_str = 'mysql+pymysql://upbx80jfe46euwjn:u1PKoKQrwlh4WE47aHM7@bzubvxk0tyjehwx4q0og-mysql.services.clever-cloud.com/bzubvxk0tyjehwx4q0og'
 app.config['SQLALCHEMY_DATABASE_URI'] = conn_str
 db = SQLAlchemy(app)
 
+cards_in_play = db.Table('cards_in_play', db.Model.metadata,
+    db.Column('player', db.String(8), db.ForeignKey('player.id')),
+    db.Column('card', db.String(24), db.ForeignKey('card.id')),
+    db.Column('game', db.String(5), db.ForeignKey('game.id'))
+)
 
-
-class DeckCard(db.Model):
+class Card(db.Model):
     id = db.Column(db.String(24), primary_key=True)
     text = db.Column(db.String(80), nullable=False)
     type = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
-        return '<Deck Card %r>' % self.text
+        return '<Card %r>' % self.text
 
     def as_json(self):
         return dict(id=self.id, text=self.text, type=self.type)
 
-class HandCard(db.Model):
-    id = db.Column(db.String(24), primary_key=True)
-    text = db.Column(db.String(80), nullable=False)
-    player = db.Column(db.String(8), db.ForeignKey('player.id'), nullable=False)
-    game = db.Column(db.String(5), db.ForeignKey('game.id'), nullable=False)
-
-    def __repr__(self):
-        return '<Hand Card %r>' % self.text
-
-    def as_json(self):
-        return dict(id=self.id, text=self.text, player=self.player, game=self.game)
-
 class Game(db.Model):
     id = db.Column(db.String(5), primary_key=True)
     state = db.Column(db.Integer, nullable=False)
-    black_card = db.Column(db.String(24), db.ForeignKey('deck_card.id'), nullable=False)
+    black_card = db.Column(db.String(24), db.ForeignKey('card.id'), nullable=False)
+    players = db.relationship("Player")
+    cards = db.relationship("Card", secondary=cards_in_play)
 
     def __repr__(self):
         return '<Game %r>' % self.id
@@ -71,8 +68,10 @@ class Player(db.Model):
     id = db.Column(db.String(8), primary_key=True)
     name = db.Column(db.String(80), nullable=False)
     state = db.Column(db.Integer, nullable=False)
-    game = db.Column(db.String(5), db.ForeignKey('game.id'), nullable=False)
     score = db.Column(db.Integer, nullable=False)
+    game = db.Column(db.String(5), db.ForeignKey('game.id'), nullable=True)
+    cards = db.relationship("Card", secondary=cards_in_play)
+    played_card = db.Column(db.String(24), db.ForeignKey('card.id'), nullable=True)
 
     def __repr__(self):
         return '<Player %r>' % self.name
@@ -80,8 +79,9 @@ class Player(db.Model):
     def as_json(self):
         return dict(id=self.id, name=self.name, state=self.state, game=self.game, score=self.score)
 
+
 # create all databases from classes above
-db.create_all()
+# db.create_all()
 
 
 
@@ -106,7 +106,7 @@ def home():
 def add_cards():
     if request.method == 'POST':
         text = request.form.get("card-text")
-        new_card = DeckCard(id=create_id(24), text=text, type=0)
+        new_card = Card(id=create_id(24), text=text, type=0)
         db.session.add(new_card)
         db.session.commit()
         return render_template("add-cards.html")
@@ -139,7 +139,7 @@ def new_game(): # create new game
     while Game.query.filter_by(id=game_id).first() is not None:
         logger.warning("Game ID already exists")
         game_id = create_id(5)
-    black_card = DeckCard.query.filter_by(type=1).order_by(func.random()).first().id
+    black_card = Card.query.filter_by(type=1).order_by(func.random()).first().id
     new_game = Game(id=game_id, state=0, black_card=black_card)
     db.session.add(new_game)
     db.session.commit()
@@ -178,8 +178,13 @@ def get_game(game_id):
     player_id = request.cookies.get('player_id')
     player_state = Player.query.filter_by(id=player_id).first().state
 
+    played_cards = []
+    for player in game.players:
+        if player.state == 1:
+            played_cards.append({"player": player.id, "card": Card.query.filter_by(id=player.played_card).first().text})
+
     # convert to JSON and return
-    data = [game.as_json(), player_state]
+    data = [game.as_json(), player_state, played_cards]
     return json.dumps(data)
 
 @app.route('/game/<game_id>/get_players')
@@ -195,18 +200,18 @@ def get_players(game_id): # return all players matching this game
 @app.route('/game/<game_id>/get_black_card')
 def get_black_card(game_id): # return black card for this game
     game = Game.query.filter_by(id=game_id).first()
-    black_card = DeckCard.query.filter_by(id=game.black_card).first()
+    black_card = Card.query.filter_by(id=game.black_card).first()
     return black_card.as_json()
 
 @app.route('/game/<game_id>/new_black_card')
 def new_black_card(game_id): # return black card for this game
-    black_card = DeckCard.query.filter_by(type=1).order_by(func.random()).first()
+    black_card = Card.query.filter_by(type=1).order_by(func.random()).first()
     return black_card.as_json()
 
 @app.route('/game/<game_id>/pick_black_card', methods=['POST'])
 def pick_black_card(game_id): # pick black card for this game
     card_id = card_play = json.loads(request.data).get("card_id")
-    black_card = DeckCard.query.filter_by(id=card_id).first()
+    black_card = Card.query.filter_by(id=card_id).first()
     game = Game.query.filter_by(id=game_id).first()
     game.black_card = black_card.id
     game.state = 1
@@ -218,20 +223,18 @@ def get_cards(game_id): # return cards for this player
     player_id = request.cookies.get('player_id')
 
     # find cards for this player in this game
-    player_cards = HandCard.query.filter_by(player=player_id, game=game_id).all()
+    player = Player.query.filter_by(id=player_id).first()
 
     # if player doesn't have cards get random ones
-    if not player_cards:
-        random_cards = DeckCard.query.filter_by(type=0).order_by(func.random()).limit(10).all()
+    if not player.cards:
+        random_cards = Card.query.filter_by(type=0).order_by(func.random()).limit(10).all()
         for random_card in random_cards:
-            new_card = HandCard(id=random_card.id, text=random_card.text, player=player_id, game=game_id)
-            db.session.add(new_card)
+            player.cards.append(random_card)
         db.session.commit()
-        player_cards = HandCard.query.filter_by(player=player_id, game=game_id).all()
 
     # convert to JSON and return
     data = []
-    for card in player_cards:
+    for card in player.cards:
         data.append(card.as_json())
     return json.dumps(data)
 
@@ -242,59 +245,61 @@ def play_card(game_id):
     # get played card
     card_play = json.loads(request.data)
     card_id = card_play.get("card_id")
+    card = Card.query.filter_by(id=card_id).first()
 
     # remove played card from player
-    HandCard.query.filter_by(id=card_id, game=game_id).delete()
-
-    # update player state
     player = Player.query.filter_by(id=player_id).first()
+    player.cards.remove(card)
+
+    # update player state and played card
     player.state = 1
+    player.played_card = card_id
 
     # give player a unique new card
-    deck_card = DeckCard.query.filter_by(type=0).order_by(func.random()).first()
-    new_card = HandCard(id=deck_card.id, text=deck_card.text, player=player_id, game=game_id)
-    db.session.add(new_card)
-
-    # get new user cards
-    new_user_cards = HandCard.query.filter_by(player=player_id, game=game_id).all()
+    new_card = Card.query.filter_by(type=0).order_by(func.random()).first()
+    player.cards.append(new_card)
 
     # if no players left to play, next game state
     still_to_play = Player.query.filter_by(game=game_id, state=0).count()
     if still_to_play == 0:
-        game = Game.query.filter_by(id=game_id)
         game.state = 2
 
     db.session.commit()
 
+
     # convert to JSON and return
     data = []
-    for card in new_user_cards:
+    for card in player.cards:
         data.append(card.as_json())
     return json.dumps(data)
 
+@app.route('/game/<game_id>/pick_winner', methods=['POST'])
+def pick_winner(game_id):
+    winner_id = json.loads(request.data).get("player")
+    winner = Player.query.filter_by(id=winner_id).first()
+    winner.score += 1
+
+    db.session.commit()
+
+    return redirect(url_for("new_round", game_id = game_id))
 
 @app.route('/game/<game_id>/new_round')
 def new_round(game_id):
     # wipe played cards and reset game state
     game = Game.query.filter_by(id=game_id).first()
     game.state = 0
+    game.black_card = Card.query.filter_by(type=1).order_by(func.random()).first().id
 
     # update players state
-    players = Player.query.filter_by(id=game_id).all()
+    players = Player.query.filter_by(game=game_id).all()
     for player in players:
         player.state = 0
+        player.played_card = None
 
     # set new card tzar
-    card_tzar = Player.query.filter_by(id=game_id).first()
+    card_tzar = Player.query.filter_by(game=game_id).first()
     card_tzar.state = 2
 
     db.session.commit()
 
     return redirect(url_for("game", game_id = game_id))
-
-
-# @app.route('/game/remove_player', methods=['POST'])
-# def remove_player():
-    # logger.debug("test")
-    # player_id = request.cookies.get('player_id')
-    # db.players.update({"_id": player_id}, {"$set": {"game": ""}})
