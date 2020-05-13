@@ -28,9 +28,11 @@ coloredlogs.install(level='DEBUG', logger=logger)
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # db 1
-conn_str = 'mysql+pymysql://unfbbwlp7m40iqvv:Th8cO1VKB9sUy94XFYQg@b1seqbavm975g4dqrctm-mysql.services.clever-cloud.com/b1seqbavm975g4dqrctm'
+# conn_str = 'mysql+pymysql://unfbbwlp7m40iqvv:Th8cO1VKB9sUy94XFYQg@b1seqbavm975g4dqrctm-mysql.services.clever-cloud.com/b1seqbavm975g4dqrctm'
 # db 2 (backup)
 # conn_str = 'mysql+pymysql://upbx80jfe46euwjn:u1PKoKQrwlh4WE47aHM7@bzubvxk0tyjehwx4q0og-mysql.services.clever-cloud.com/bzubvxk0tyjehwx4q0og'
+# local db
+conn_str = 'mysql+pymysql://root:password1@localhost/cards-against-humanity'
 app.config['SQLALCHEMY_DATABASE_URI'] = conn_str
 db = SQLAlchemy(app)
 
@@ -81,7 +83,7 @@ class Player(db.Model):
 
 
 # create all databases from classes above
-# db.create_all()
+db.create_all()
 
 
 
@@ -125,8 +127,7 @@ def set_name(): # set player name if player hasn't done so before
         db.session.commit()
 
         # redirect back to game
-        game_id = request.cookies.get('game_id')
-        resp = make_response(redirect(url_for("game", game_id = game_id)))
+        resp = make_response(redirect(request.cookies.get('next')))
         resp.set_cookie('player_id', player_id)
         return resp
     else:
@@ -134,17 +135,31 @@ def set_name(): # set player name if player hasn't done so before
 
 @app.route('/new_game')
 def new_game(): # create new game
-    # create new unique game
-    game_id = create_id(5)
-    while Game.query.filter_by(id=game_id).first() is not None:
-        logger.warning("Game ID already exists")
-        game_id = create_id(5)
-    black_card = Card.query.filter_by(type=1).order_by(func.random()).first().id
-    new_game = Game(id=game_id, state=0, black_card=black_card)
-    db.session.add(new_game)
-    db.session.commit()
 
-    return redirect(url_for("game", game_id = game_id))
+    player_id = request.cookies.get('player_id')
+    # if player has not been here before
+    if player_id is None:
+        # create new name
+        resp = make_response(redirect(url_for("set_name")))
+        resp.set_cookie('next', '/new_game')
+        return resp
+    else:
+        # create new unique game
+        game_id = create_id(5)
+        while Game.query.filter_by(id=game_id).first() is not None:
+            logger.warning("Game ID already exists")
+            game_id = create_id(5)
+        black_card = Card.query.filter_by(type=1).order_by(func.random()).first().id
+        new_game = Game(id=game_id, state=0, black_card=black_card)
+        db.session.add(new_game)
+
+        # set card tzar
+        card_tzar = Player.query.filter_by(id=player_id).first()
+        card_tzar.state = 2
+
+        db.session.commit()
+
+        return redirect(url_for("game", game_id = game_id))
 
 
 
@@ -157,7 +172,7 @@ def game(game_id):
         if player_id is None:
             # create new name
             resp = make_response(redirect(url_for("set_name")))
-            resp.set_cookie('game_id', game_id)
+            resp.set_cookie('next', 'game/' + game_id)
             return resp
         else:
             # add game to player
