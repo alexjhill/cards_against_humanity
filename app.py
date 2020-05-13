@@ -15,7 +15,7 @@ PLAYER STATES
 from flask import Flask, render_template, request, redirect, url_for, make_response
 from jinja2 import Template
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func
+from sqlalchemy import func, PrimaryKeyConstraint
 import random
 import coloredlogs, logging
 import json
@@ -36,16 +36,42 @@ conn_str = 'mysql+pymysql://root:password1@localhost/cards-against-humanity'
 app.config['SQLALCHEMY_DATABASE_URI'] = conn_str
 db = SQLAlchemy(app)
 
-cards_in_play = db.Table('cards_in_play', db.Model.metadata,
-    db.Column('player', db.String(8), db.ForeignKey('player.id')),
-    db.Column('card', db.String(24), db.ForeignKey('card.id')),
-    db.Column('game', db.String(5), db.ForeignKey('game.id'))
-)
+class CardInPlay(db.Model):
+    __tablename__ = 'card_in_play'
+    __table_args__ = (
+        PrimaryKeyConstraint('player_id', 'card_id', 'game_id'),
+    )
+
+    player_id = db.Column(db.String(8), db.ForeignKey('player.id'))
+    card_id = db.Column(db.String(24), db.ForeignKey('card.id'))
+    game_id = db.Column(db.String(5), db.ForeignKey('game.id'))
+
+# class CardInPlay(db.Model):
+#     __tablename__ = 'card_in_play'
+#
+#     player_id = db.Column(db.String(8), db.ForeignKey('player.id'), primary_key=True)
+#     card_id = db.Column(db.String(24), db.ForeignKey('card.id'), primary_key=True)
+#     game_id = db.Column(db.String(5), db.ForeignKey('game.id'), primary_key=True)
+#
+#     db.UniqueConstraint('player_id', 'card_id', 'game_id')
+#     db.relationship('Player', uselist=False, backref='card_in_play', lazy='dynamic')
+#     db.relationship('Card', uselist=False, backref='card_in_play', lazy='dynamic')
+#     db.relationship('Game', uselist=False, backref='card_in_play', lazy='dynamic')
+#
+#     def __init__(self, player, card, game):
+#         self.player_id = player.id
+#         self.card_id = card.id
+#         self.game_id = game.id
+#
+#     def __repr__(self):
+#         return "<card_in_play(%s)>"
 
 class Card(db.Model):
+    __tablename__ = 'card'
     id = db.Column(db.String(24), primary_key=True)
     text = db.Column(db.String(80), nullable=False)
     type = db.Column(db.Integer, nullable=False)
+    owners = db.relationship('Player', secondary='card_in_play')
 
     def __repr__(self):
         return '<Card %r>' % self.text
@@ -54,11 +80,12 @@ class Card(db.Model):
         return dict(id=self.id, text=self.text, type=self.type)
 
 class Game(db.Model):
+    __tablename__ = 'game'
     id = db.Column(db.String(5), primary_key=True)
     state = db.Column(db.Integer, nullable=False)
     black_card = db.Column(db.String(24), db.ForeignKey('card.id'), nullable=False)
-    players = db.relationship("Player")
-    cards = db.relationship("Card", secondary=cards_in_play)
+    players = db.relationship('Player')
+    cards = db.relationship('Card', secondary='card_in_play')
 
     def __repr__(self):
         return '<Game %r>' % self.id
@@ -67,12 +94,13 @@ class Game(db.Model):
         return dict(id=self.id, state=self.state, black_card=self.black_card)
 
 class Player(db.Model):
+    __tablename__ = 'player'
     id = db.Column(db.String(8), primary_key=True)
     name = db.Column(db.String(80), nullable=False)
     state = db.Column(db.Integer, nullable=False)
     score = db.Column(db.Integer, nullable=False)
     game = db.Column(db.String(5), db.ForeignKey('game.id'), nullable=True)
-    cards = db.relationship("Card", secondary=cards_in_play)
+    cards = db.relationship('Card', secondary='card_in_play')
     played_card = db.Column(db.String(24), db.ForeignKey('card.id'), nullable=True)
 
     def __repr__(self):
@@ -242,9 +270,11 @@ def get_cards(game_id): # return cards for this player
 
     # if player doesn't have cards get random ones
     if not player.cards:
+        game = Game.query.filter_by(id=game_id).first()
         random_cards = Card.query.filter_by(type=0).order_by(func.random()).limit(10).all()
         for random_card in random_cards:
-            player.cards.append(random_card)
+            new_card_in_play = CardInPlay(player_id=player.id, card_id=random_card.id, game_id=game_id)
+            db.session.add(new_card_in_play)
         db.session.commit()
 
     # convert to JSON and return
@@ -271,22 +301,36 @@ def play_card(game_id):
     player.played_card = card_id
 
     # give player a unique new card
-    new_card = Card.query.filter_by(type=0).order_by(func.random()).first()
-    player.cards.append(new_card)
+    random_card = Card.query.filter_by(type=0).order_by(func.random()).first()
+    new_card_in_play = CardInPlay(player_id=player.id, card_id=random_card.id, game_id=game_id)
 
-    # if no players left to play, next game state
-    still_to_play = Player.query.filter_by(game=game_id, state=0).count()
-    if still_to_play == 0:
-        game.state = 2
+    # fish = Card.query.outerjoin(CardInPlay, Card.id==CardInPlay.card_id).filter_by(Card.type=0).all()
+    fish = Card.query.outerjoin(CardInPlay, Card.id == CardInPlay.card_id).filter(Card.type == 0).all()
+    logger.debug(fish)
+    for row in fish:
+        logger.debug(row.as_json())
 
-    db.session.commit()
+    # logger.debug(player.cards)
+    # player.cards.append(new_card)
+    # logger.debug(player.cards)
+    #
+    # db.session.commit()
 
+    return ""
 
-    # convert to JSON and return
-    data = []
-    for card in player.cards:
-        data.append(card.as_json())
-    return json.dumps(data)
+    # # if no players left to play, next game state
+    # still_to_play = Player.query.filter_by(game=game_id, state=0).count()
+    # if still_to_play == 0:
+    #     game = Game.query.filter_by(id=game_id).first()
+    #     game.state = 2
+    #
+    # db.session.commit()
+    #
+    # # convert to JSON and return
+    # data = []
+    # for card in player.cards:
+    #     data.append(card.as_json())
+    # return json.dumps(data)
 
 @app.route('/game/<game_id>/pick_winner', methods=['POST'])
 def pick_winner(game_id):

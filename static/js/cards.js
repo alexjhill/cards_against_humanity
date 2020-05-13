@@ -71,7 +71,7 @@ class HandCards extends React.Component {
                     )
                 )
             } else if (this.props.playerState == 2) {
-                return <h4>Fish</h4>
+                return <h4>Choose a black card</h4>
             } else {
                 return <h4>Game state/player state combo error...</h4>
             }
