@@ -21,6 +21,7 @@ class HandCards extends React.Component {
     }
 
     fetchCards() {
+        console.log("fetch cards")
         // Make a request for cards for player
         axios.get('/game/' + getCookie("game_id") + '/get_cards')
         .then(response => {

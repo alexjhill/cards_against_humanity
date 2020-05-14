@@ -11,31 +11,15 @@ class BlackCard extends React.Component {
     // function which is called when component is added
     componentDidMount() {
         // get black card
-        if (this.props.gameState === 0) {
-            this.newCard();
-        } else {
+        if (this.props.gameState === 1 || this.props.gameState === 2) {
             this.fetchCard();
+        } else {
+            this.newCard();
         }
     }
 
-    fetchCard() {
-        // Make a request for random black card
-        axios.get('/game/' + getCookie("game_id") + '/get_black_card')
-        .then(response => {
-            // handle success
-            this.setState({
-                id: response.data.id,
-                text: response.data.text
-            })
-        })
-        .catch(error => {
-            // handle error
-            console.log(error);
-            gameState = -1;
-        });
-    }
-
     newCard() {
+        console.log("new card")
         // Make a request for random black card
         axios.get('/game/' + getCookie("game_id") + '/new_black_card')
         .then(response => {
@@ -54,12 +38,31 @@ class BlackCard extends React.Component {
 
     // set black card
     pickCard(id, e) {
+        console.log("pick card")
         axios.post('/game/' + getCookie("game_id") + '/pick_black_card', {
             card_id: id
         })
         .catch(error => {
             // handle error
             console.log(error);
+        });
+    }
+
+    fetchCard() {
+        console.log("fetch card")
+        // Make a request for random black card
+        axios.get('/game/' + getCookie("game_id") + '/get_black_card')
+        .then(response => {
+            // handle success
+            this.setState({
+                id: response.data.id,
+                text: response.data.text
+            })
+        })
+        .catch(error => {
+            // handle error
+            console.log(error);
+            gameState = -1;
         });
     }
 
