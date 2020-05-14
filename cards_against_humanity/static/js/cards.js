@@ -23,7 +23,7 @@ class HandCards extends React.Component {
     fetchCards() {
         console.log("fetch cards")
         // Make a request for cards for player
-        axios.get('/game/' + getCookie("game_id") + '/get_cards')
+        axios.get('/api/' + getCookie("game_id") + '/get_cards')
         .then(response => {
             // handle success
             this.setState({
@@ -37,7 +37,7 @@ class HandCards extends React.Component {
     }
 
     playCard(id, e) {
-        axios.post('/game/' + getCookie("game_id") + '/play_card', {
+        axios.post('/api/' + getCookie("game_id") + '/play_card', {
             player: getCookie("player_id"),
             card_id: id
         })
@@ -48,7 +48,7 @@ class HandCards extends React.Component {
     }
 
     pickWinner(playerId, e) {
-        axios.post('/game/' + getCookie("game_id") + '/pick_winner', {
+        axios.post('/api/' + getCookie("game_id") + '/pick_winner', {
             player: playerId
         })
         .catch(error => {

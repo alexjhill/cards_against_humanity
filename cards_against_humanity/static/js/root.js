@@ -24,7 +24,7 @@ class Root extends React.Component {
 
     fetchGame() {
         // Make a request for cards for player
-        axios.get('/game/' + getCookie("game_id") + '/get_game')
+        axios.get('/api/' + getCookie("game_id") + '/get_game')
         .then(response => {
             // handle success
             this.setState({

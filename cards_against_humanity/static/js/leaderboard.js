@@ -23,7 +23,7 @@ class Leaderboard extends React.Component {
     fetchPlayers() {
         this.setState({players: this.state.players});
         // Make a request for players for this game
-        axios.get('/game/' + getCookie("game_id") + '/get_players')
+        axios.get('/api/' + getCookie("game_id") + '/get_players')
         .then(response => {
             // handle success
             this.setState({players: response.data})
