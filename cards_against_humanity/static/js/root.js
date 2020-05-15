@@ -65,6 +65,7 @@ class Root extends React.Component {
                 <div className="row">
                     <ul id="hand-cards">
                         <HandCards gameState = { this.state.gameState } playerState = { this.state.playerState } playedCards = { this.state.playedCards } />
+                        <li class="card-spacer">.</li>
                     </ul>
                 </div>
             </React.Fragment>

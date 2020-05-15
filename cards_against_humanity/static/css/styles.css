@@ -5,29 +5,28 @@
 }
 
 #root {
-    height: calc(100% - 56px);
+    padding-top: 56px;
+    height: 100%;
 }
 
 .row {
-    height: 50%;
     max-width: 2000px;
     display: flex;
     justify-content: center;
-    align-content: center;
-    margin: 0 auto !important;
+    margin: 0 auto;
 }
 
-.card {
-    width: 15vw;
-    max-width: 300px;
-    height: 20vw;
-    max-height: 400px;
-}
+
 
 .black-card {
     background: #212121;
     color: #fff;
     font-weight: 600;
+    height: 60%;
+    min-height: 220px;
+    width: 20vh;
+    margin: 20px 0;
+    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.14);
 } .black-card-btns {
     display: flex;
     justify-content: space-around;
@@ -41,82 +40,94 @@
 
 #hand-cards {
     display: flex;
-    justify-content: center;
-    align-items: center;
     width: 100%;
-    height: 100%;
-    padding: 20px 10%;
+    overflow-x: scroll;
+    padding: 20px 10px;
     margin: 0;
     list-style: none;
+    scrollbar-width: none;
+} #hand-cards::-webkit-scrollbar {
+    display: none;
 } #hand-cards li {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    width: 10%;
-    height: 100%;
-    transition: .2s;
-} #hand-cards li:hover ~ li {
-    transform: translateX(60%);
-    transition: .2s;
-} #hand-cards li:hover:not(:last-of-type) {
-    transform: translateX(-50%);
+    position: relative;
+    min-width: 25vh;
+    height: 35vh;
+    margin: 0 5px;
 } #hand-cards li .hand-card {
     position: relative;
+    width: 100%;
+    height: 100%;
     box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.14);
-    transition: .2s;
     cursor: pointer;
 } #hand-cards li .hand-card:hover {
     box-shadow: 0px 2px 15px 2px #a1ed9e;
     border-color: #a1ed9e;
     transition: .2s;
-} .hand-card a {
-    height: 100%;
-    width: 100%;
-    color: #212121;
-} .hand-card a:hover {
-    text-decoration: none;
-} .card-body p {
-    letter-spacing: 0.4px;
+} #hand-cards li.card-spacer {
+    min-width: 0;
+    color: transparent;
+    margin: 0 0 0 10px;
+    font-size: 1px;
 }
 
-
-@media only screen and (max-width: 850px) {
-    .card {
-        font-size: 14px;
-    } .card .card-body {
-        padding: 15px;
-    }
-}
-
-
-@media only screen and (max-width: 768px) {
-    .row:nth-child(2) {
-        height: auto;
+@media only screen and (min-width: 413px) {
+    .row {
+        height: 50%;
+    } .row:nth-child(1) {
+    } .row .col {
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
     #hand-cards {
-        align-items: flex-start;
-        flex-wrap: wrap;
-        padding: 0;
+        height: 100%;
     } #hand-cards li {
-        width: 20%;
-        margin: 5px;
-    } .card {
+        min-width: 30vh;
+        height: 100%;
+    }
+}
+
+@media only screen and (min-width: 769px) {
+
+    .black-card {
+        height: 75%;
+        width: 25vh;
+    } #hand-cards {
+        padding: 50px 10%;
+        align-items: center;
+        justify-content: center;
+    } #hand-cards li {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        min-width: 0;
+        width: 10vw;
+        height: 22vw;
+        transition: .2s;
+    } #hand-cards li.card-spacer {
+        display: none;
+    } #hand-cards li:hover ~ li {
+        transform: translateX(60%);
+        transition: .2s;
+    } #hand-cards li:hover:not(:nth-child(10)) {
+        transform: translateX(-50%);
+    } #hand-cards li .hand-card {
+        position: relative;
+        width: 220%;
+        box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.14);
+        transition: .2s;
+        cursor: pointer;
+    } #hand-cards li .hand-card:hover {
+        box-shadow: 0px 2px 15px 2px #c3f7c1;
+        border-color: #a1ed9e;
+        transition: .2s;
+    } .hand-card a {
+        height: 100%;
         width: 100%;
-        height: 25vw;
-    }
-}
-
-
-@media only screen and (max-width: 550px) {
-    .row:nth-child(2) {
-        height: auto;
-    }
-    #hand-cards {
-        padding: 0;
-    } #hand-cards li {
-        width: 33%;
-        margin: 10px;
-    } .card {
-        height: 45vw;
+        color: #212121;
+    } .hand-card a:hover {
+        text-decoration: none;
+    } .card-body p {
+        letter-spacing: 0.4px;
     }
 }
