@@ -43,17 +43,17 @@ class Root extends React.Component {
     render() {
         return (
             <React.Fragment>
-                <div className="row justify-content-md-center my-3">
-                    <div id="black-card" className="col col-md-4">
+                <div className="row justify-content-md-center">
+                    <div id="black-card" className="col col-md-4" align="center">
                         <BlackCard gameState = { this.state.gameState } playerState = { this.state.playerState } />
                     </div>
                     <div className="col col-md-4">
                         <table className="table">
                             <thead>
                                 <tr>
-                                    <th scope="col"></th>
-                                    <th scope="col"><h3>Scores</h3></th>
-                                    <th scope="col"></th>
+                                    <th scope="col">State</th>
+                                    <th scope="col">Player</th>
+                                    <th scope="col">Score</th>
                                 </tr>
                             </thead>
                             <tbody id="leaderboard">

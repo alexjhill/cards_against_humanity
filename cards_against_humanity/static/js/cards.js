@@ -21,7 +21,6 @@ class HandCards extends React.Component {
     }
 
     fetchCards() {
-        console.log("fetch cards")
         // Make a request for cards for player
         axios.get('/api/' + getCookie("game_id") + '/get_cards')
         .then(response => {
@@ -37,6 +36,7 @@ class HandCards extends React.Component {
     }
 
     playCard(id, e) {
+        console.log("card played: " + id)
         axios.post('/api/' + getCookie("game_id") + '/play_card', {
             player: getCookie("player_id"),
             card_id: id
@@ -63,9 +63,9 @@ class HandCards extends React.Component {
                 return (
                     this.state.cards.map((card) =>
                         <li key={ card.id }>
-                            <div className="card hand-card" onClick={(e) => this.playCard(card.id, e)}>
+                            <div className="card hand-card">
                                 <div className="card-body">
-                                    <h5 className="card-title">{ card.text }</h5>
+                                    <p className="card-title">{ card.text }</p>
                                 </div>
                             </div>
                         </li>
@@ -83,7 +83,7 @@ class HandCards extends React.Component {
                         <li key={ card.id }>
                             <div className="card hand-card" onClick={(e) => this.playCard(card.id, e)}>
                                 <div className="card-body">
-                                    <h5 className="card-title">{ card.text }</h5>
+                                    <p className="card-title">{ card.text }</p>
                                 </div>
                             </div>
                         </li>
@@ -117,7 +117,7 @@ class HandCards extends React.Component {
                         <li key={ cardPlay.player }>
                             <div className="card hand-card" onClick={(e) => this.pickWinner(cardPlay.player, e)}>
                                 <div className="card-body">
-                                    <h5 className="card-title">{ cardPlay.card }</h5>
+                                    <p className="card-title">{ card.text }</p>
                                 </div>
                             </div>
                         </li>

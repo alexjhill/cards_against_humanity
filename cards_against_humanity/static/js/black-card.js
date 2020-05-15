@@ -19,7 +19,6 @@ class BlackCard extends React.Component {
     }
 
     newCard() {
-        console.log("new card")
         // Make a request for random black card
         axios.get('/api/' + getCookie("game_id") + '/new_black_card')
         .then(response => {
@@ -38,7 +37,6 @@ class BlackCard extends React.Component {
 
     // set black card
     pickCard(id, e) {
-        console.log("pick card")
         axios.post('/api/' + getCookie("game_id") + '/pick_black_card', {
             card_id: id
         })
@@ -49,7 +47,6 @@ class BlackCard extends React.Component {
     }
 
     fetchCard() {
-        console.log("fetch card")
         // Make a request for random black card
         axios.get('/api/' + getCookie("game_id") + '/get_black_card')
         .then(response => {
@@ -69,15 +66,23 @@ class BlackCard extends React.Component {
     render() {
         if (this.props.gameState == 0) { // black card selection
             if (this.props.playerState == 0) {
-                return <h4>Waiting for card tzar to pick a card...</h4>
+                return (
+                    <div className="float-right">
+                        <div className="">
+                            <div className="card-body">
+                                <h5 className="card-title text-muted">Waiting for Card Tzar to pick a black card...</h5>
+                            </div>
+                        </div>
+                    </div>
+                )
             } else if (this.props.playerState == 1) {
-                return <h4>Waiting for card tzar to pick a card...</h4>
+                return <h4>Player state error...</h4>
             } else if (this.props.playerState == 2) {
                 return (
                     <div className="black-card float-right">
                         <div className="card">
                             <div className="card-body">
-                                <h5 className="card-title">{ this.state.text }</h5>
+                                <p className="card-title">{ this.state.text }</p>
                             </div>
                         </div>
                         <div className="black-card-btns mt-3">
@@ -92,11 +97,9 @@ class BlackCard extends React.Component {
             }
         } else if (this.props.gameState == 1 || this.props.gameState == 2) { // card playing or winner selection
             return (
-                <div className="black-card float-right">
-                    <div className="card">
-                        <div className="card-body">
-                            <h5 className="card-title">{ this.state.text }</h5>
-                        </div>
+                <div className="black-card card text-left">
+                    <div className="card-body">
+                        <p className="card-title">{ this.state.text }</p>
                     </div>
                 </div>
             )
