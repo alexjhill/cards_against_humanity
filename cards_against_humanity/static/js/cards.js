@@ -36,7 +36,6 @@ class HandCards extends React.Component {
     }
 
     playCard(id, e) {
-        console.log("card played: " + id)
         axios.post('/api/' + getCookie("game_id") + '/play_card', {
             player: getCookie("player_id"),
             card_id: id
@@ -72,9 +71,9 @@ class HandCards extends React.Component {
                     )
                 )
             } else if (this.props.playerState == 2) {
-                return <h4>Choose a black card</h4>
+                return <h4 className="text-muted">Choose a black card</h4>
             } else {
-                return <h4>Game state/player state combo error...</h4>
+                return <h4 className="text-muted">Game state/player state combo error...</h4>
             }
         } else if (this.props.gameState == 1) {
             if (this.props.playerState == 0) {
@@ -91,25 +90,25 @@ class HandCards extends React.Component {
                 )
             } else if (this.props.playerState == 1) {
                 return (
-                    <h4>Waiting for other players to play...</h4>
+                    <h4 className="text-muted">Waiting for other players to play their cards...</h4>
                 )
             } else if (this.props.playerState == 2) {
                 return (
-                    <h4>Waiting for players to play...</h4>
+                    <h4 className="text-muted">Waiting for players to play their cards...</h4>
                 )
             } else {
                 return (
-                    <h4>Player state error...</h4>
+                    <h4 className="text-muted">Player state error...</h4>
                 )
             }
         } else if (this.props.gameState == 2) {
             if (this.props.playerState == 0) { // card playing
                 return (
-                    <h4>Player state error...</h4>
+                    <h4 className="text-muted">Player state error...</h4>
                 )
             } else if (this.props.playerState == 1) { // card played
                 return (
-                    <h4>Waiting for card tzar to pick a card...</h4>
+                    <h4 className="text-muted">Waiting for card tzar to pick a winner...</h4>
                 )
             } else  if (this.props.playerState == 2) { // card tzar
                 return (
@@ -117,7 +116,7 @@ class HandCards extends React.Component {
                         <li key={ cardPlay.player }>
                             <div className="card hand-card" onClick={(e) => this.pickWinner(cardPlay.player, e)}>
                                 <div className="card-body">
-                                    <p className="card-title">{ card.text }</p>
+                                    <p className="card-title">{ cardPlay.card }</p>
                                 </div>
                             </div>
                         </li>

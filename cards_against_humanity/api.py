@@ -17,7 +17,7 @@ def get_game(game_id):
     for player in game.players:
         if player.state == 1:
             played_cards.append({"player": player.id, "card": Card.query.filter_by(id=player.played_card).first().text})
-
+            
     # convert to JSON and return
     data = [game.as_json(), player_state, played_cards]
     return json.dumps(data)
