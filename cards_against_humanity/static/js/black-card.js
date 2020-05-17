@@ -79,13 +79,13 @@ class BlackCard extends React.Component {
                 return <h4>Player state error...</h4>
             } else if (this.props.playerState == 2) {
                 return (
-                    <div className="black-card float-right">
+                    <div className="black-card">
                         <div className="card">
                             <div className="card-body">
                                 <p className="card-title">{ this.state.text }</p>
                             </div>
                         </div>
-                        <div className="black-card-btns mt-3">
+                        <div className="black-card-btns">
                             <button className="btn btn-secondary" onClick={(e) => this.newCard(e)}>New card</button>
                             <button className="btn btn-primary" onClick={(e) => this.pickCard(this.state.id, e)}>Pick card</button>
                         </div>
@@ -97,9 +97,11 @@ class BlackCard extends React.Component {
             }
         } else if (this.props.gameState == 1 || this.props.gameState == 2) { // card playing or winner selection
             return (
-                <div className="black-card card text-left">
-                    <div className="card-body">
-                        <p className="card-title">{ this.state.text }</p>
+                <div className="black-card">
+                    <div className="card">
+                        <div className="card-body">
+                            <p className="card-title">{ this.state.text }</p>
+                        </div>
                     </div>
                 </div>
             )

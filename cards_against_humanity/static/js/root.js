@@ -44,7 +44,7 @@ class Root extends React.Component {
         return (
             <React.Fragment>
                 <div className="row justify-content-md-center">
-                    <div id="black-card" className="col col-md-4" align="center">
+                    <div id="black-card" className="col col-md-4">
                         <BlackCard gameState = { this.state.gameState } playerState = { this.state.playerState } />
                     </div>
                     <div className="col col-md-4">
@@ -65,7 +65,7 @@ class Root extends React.Component {
                 <div className="row">
                     <ul id="hand-cards">
                         <HandCards gameState = { this.state.gameState } playerState = { this.state.playerState } playedCards = { this.state.playedCards } />
-                        <li class="card-spacer">.</li>
+                        <li className="card-spacer">.</li>
                     </ul>
                 </div>
             </React.Fragment>
