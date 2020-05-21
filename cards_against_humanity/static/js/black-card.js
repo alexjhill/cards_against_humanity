@@ -19,6 +19,7 @@ class BlackCard extends React.Component {
     }
 
     newCard() {
+        console.log("new card")
         // Make a request for random black card
         axios.get('/api/' + getCookie("game_id") + '/new_black_card')
         .then(response => {
@@ -37,6 +38,7 @@ class BlackCard extends React.Component {
 
     // set black card
     pickCard(id, e) {
+        this.props.action(1, this.state.playerState)
         axios.post('/api/' + getCookie("game_id") + '/pick_black_card', {
             card_id: id
         })
@@ -76,7 +78,7 @@ class BlackCard extends React.Component {
                     </div>
                 )
             } else if (this.props.playerState == 1) {
-                return <h4>Player state error...</h4>
+                return <div className="loading-sprite"><div></div><div></div><div></div><div></div></div>
             } else if (this.props.playerState == 2) {
                 return (
                     <div className="black-card">
@@ -93,7 +95,7 @@ class BlackCard extends React.Component {
 
                 )
             } else {
-                return <h4>Player state error...</h4>
+                return <div className="loading-sprite"><div></div><div></div><div></div><div></div></div>
             }
         } else if (this.props.gameState == 1 || this.props.gameState == 2) { // card playing or winner selection
             return (

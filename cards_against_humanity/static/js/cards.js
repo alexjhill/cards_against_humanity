@@ -36,6 +36,7 @@ class HandCards extends React.Component {
     }
 
     playCard(id, e) {
+        this.props.action(this.props.gameState, 1)
         axios.post('/api/' + getCookie("game_id") + '/play_card', {
             player: getCookie("player_id"),
             card_id: id
@@ -47,6 +48,7 @@ class HandCards extends React.Component {
     }
 
     pickWinner(playerId, e) {
+        this.props.action(0, this.state.playerState)
         axios.post('/api/' + getCookie("game_id") + '/pick_winner', {
             player: playerId
         })
@@ -73,7 +75,7 @@ class HandCards extends React.Component {
             } else if (this.props.playerState == 2) {
                 return <h4 className="text-muted">Choose a black card</h4>
             } else {
-                return <h4 className="text-muted">Game state/player state combo error...</h4>
+                return <div className="loading-sprite"><div></div><div></div><div></div><div></div></div>
             }
         } else if (this.props.gameState == 1) {
             if (this.props.playerState == 0) {
@@ -98,13 +100,13 @@ class HandCards extends React.Component {
                 )
             } else {
                 return (
-                    <h4 className="text-muted">Player state error...</h4>
+                    <div className="loading-sprite"><div></div><div></div><div></div><div></div></div>
                 )
             }
         } else if (this.props.gameState == 2) {
             if (this.props.playerState == 0) { // card playing
                 return (
-                    <h4 className="text-muted">Player state error...</h4>
+                    <div className="loading-sprite"><div></div><div></div><div></div><div></div></div>
                 )
             } else if (this.props.playerState == 1) { // card played
                 return (

@@ -1,6 +1,10 @@
 class Root extends React.Component {
     constructor(props) {
         super(props);
+
+        // Bind the this context to the handler function
+        this.handler = this.handler.bind(this);
+
         this.state = {
             blackCard: "",
             gameState: "",
@@ -20,6 +24,14 @@ class Root extends React.Component {
     componentWillUnmount() {
         clearInterval(this.timer);
         this.timer = null;
+    }
+
+    // This method will be sent to the child component
+    handler(gameState, playerState) {
+        this.setState({
+            gameState: gameState,
+            playerState: playerState
+        });
     }
 
     fetchGame() {
@@ -45,7 +57,7 @@ class Root extends React.Component {
             <React.Fragment>
                 <div className="row justify-content-md-center">
                     <div id="black-card" className="col col-md-4">
-                        <BlackCard gameState = { this.state.gameState } playerState = { this.state.playerState } />
+                        <BlackCard gameState = { this.state.gameState } playerState = { this.state.playerState } action = { this.handler }/>
                     </div>
                     <div className="col col-md-4">
                         <table className="table">
@@ -64,7 +76,7 @@ class Root extends React.Component {
                 </div>
                 <div className="row">
                     <ul id="hand-cards">
-                        <HandCards gameState = { this.state.gameState } playerState = { this.state.playerState } playedCards = { this.state.playedCards } />
+                        <HandCards gameState = { this.state.gameState } playerState = { this.state.playerState } playedCards = { this.state.playedCards } action = { this.handler }/>
                         <li className="card-spacer">.</li>
                     </ul>
                 </div>

@@ -39,7 +39,14 @@ class Leaderboard extends React.Component {
         return (
             this.state.players.map((player) =>
             <tr key={ player.id }>
-                <td>{ player.state }</td>
+                <td>{(() => {
+                    switch (player.state) {
+                        case 0: return "\u{274C}";
+                        case 1: return "\u{2714}";
+                        case 2: return "\u{1F451}";
+                        default: return "";
+                    }
+                })()}</td>
                 <td>{ player.name }</td>
                 <td>{ player.score }</td>
             </tr>
