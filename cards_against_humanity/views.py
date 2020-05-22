@@ -11,6 +11,8 @@ PLAYER STATES
 1 = card played
 2 = card tzar
 
+https://crhallberg.com/cah/
+
 '''
 from cards_against_humanity import app
 from flask import render_template, request, redirect, url_for, make_response
@@ -74,21 +76,27 @@ def new_game(): # create new game
         resp.set_cookie('next', '/new_game')
         return resp
     else:
-        # create new unique game
-        game_id = create_id(5)
-        while Game.query.filter_by(id=game_id).first() is not None:
-            logger.warning("Game ID already exists")
-            game_id = create_id(5)
-        new_game = Game(id=game_id, state=0)
-        db.session.add(new_game)
-
         # set card tzar
         card_tzar = Player.query.filter_by(id=player_id).first()
-        card_tzar.state = 2
+        if card_tzar:
+            # create new unique game
+            game_id = create_id(5)
+            while Game.query.filter_by(id=game_id).first() is not None:
+                logger.warning("Game ID already exists")
+                game_id = create_id(5)
+            new_game = Game(id=game_id, state=0)
+            db.session.add(new_game)
 
-        db.session.commit()
+            card_tzar.state = 2
 
-        return redirect(url_for("game", game_id = game_id))
+            db.session.commit()
+
+            return redirect(url_for("game", game_id = game_id))
+        else:
+            # if player not in database, make a new one
+            resp = make_response(redirect(url_for("set_name")))
+            resp.set_cookie('next', 'new_game')
+            return resp
 
 
 
@@ -99,19 +107,25 @@ def game(game_id):
         player_id = request.cookies.get('player_id')
         # if player has not been here before
         if player_id is None:
-            # create new name
             resp = make_response(redirect(url_for("set_name")))
             resp.set_cookie('next', 'game/' + game_id)
             return resp
         else:
             # add game to player
             player = Player.query.filter_by(id=player_id).first()
-            player.game = game_id
-            db.session.commit()
+            if player:
+                player.game = game_id
+                db.session.commit()
 
-            # return game page
-            resp = make_response(render_template("game.html"))
-            resp.set_cookie('game_id', game_id)
-            return resp
+                # return game page
+                resp = make_response(render_template("game.html"))
+                resp.set_cookie('game_id', game_id)
+                return resp
+            else:
+                # if player not in database, make a new one
+                resp = make_response(redirect(url_for("set_name")))
+                resp.set_cookie('next', 'game/' + game_id)
+                return resp
+
     else:
         return redirect(url_for("home"))

@@ -59,9 +59,9 @@
 }
 
 
-.black-card {
+.black-card, .winning-card {
     margin: 10px 0 20px 0;
-} .black-card .card {
+} .black-card .card, .winning-card .card {
     background: #212121;
     color: #fff;
     font-weight: 600;
@@ -79,6 +79,12 @@
     white-space: nowrap;
 } .black-card-btns .btn:nth-child(1) {
     margin-right: 10px;
+}
+
+.winning-card .card {
+    background: #fff;
+    color: #212121;
+    margin-left: 10px;
 }
 
 #leaderboard {
@@ -117,6 +123,10 @@
     color: transparent;
     margin: 0 0 0 10px;
     font-size: 1px;
+}
+
+.winning-card {
+
 }
 
 @media only screen and (min-width: 413px) {

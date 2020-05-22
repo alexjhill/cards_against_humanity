@@ -17,7 +17,7 @@ def get_game(game_id):
     for player in game.players:
         if player.state == 1:
             played_cards.append({"player": player.id, "card": Card.query.filter_by(id=player.played_card).first().text})
-            
+
     # convert to JSON and return
     data = [game.as_json(), player_state, played_cards]
     return json.dumps(data)
@@ -35,14 +35,15 @@ def get_players(game_id): # return all players matching this game
 @app.route('/api/<game_id>/new_black_card')
 def new_black_card(game_id): # return black card for this game
     black_card = Card.query.filter_by(type=1).order_by(func.random()).first()
+    game = Game.query.filter_by(id=game_id).first()
+    game.black_card = black_card.id
+    db.session.commit()
     return black_card.as_json()
 
 @app.route('/api/<game_id>/pick_black_card', methods=['POST'])
 def pick_black_card(game_id): # pick black card for this game
-    card_id = card_play = json.loads(request.data).get("card_id")
-    black_card = Card.query.filter_by(id=card_id).first()
     game = Game.query.filter_by(id=game_id).first()
-    game.black_card = black_card.id
+    black_card = Card.query.filter_by(id=game.black_card).first()
     game.state = 1
     game.used_cards.append(black_card)
     db.session.commit()
@@ -121,12 +122,13 @@ def pick_winner(game_id):
     winner_id = json.loads(request.data).get("player")
     winner = Player.query.filter_by(id=winner_id).first()
     winner.score += 1
-
+    game = Game.query.filter_by(id=game_id).first()
+    game.state = 3
     db.session.commit()
+    return ('', 204)
 
-    return redirect(url_for("new_round", game_id = game_id))
 
-@app.route('/api/<game_id>/new_round')
+@app.route('/api/<game_id>/new_round', methods=['POST'])
 def new_round(game_id):
     # wipe played cards and reset game state
     game = Game.query.filter_by(id=game_id).first()

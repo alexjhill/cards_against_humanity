@@ -48,7 +48,7 @@ class HandCards extends React.Component {
     }
 
     pickWinner(playerId, e) {
-        this.props.action(0, this.state.playerState)
+        this.props.action(3, 2)
         axios.post('/api/' + getCookie("game_id") + '/pick_winner', {
             player: playerId
         })
@@ -125,6 +125,16 @@ class HandCards extends React.Component {
                     )
                 )
             }
+        } else if (this.props.gameState == 3) { // winner page
+            return (
+                <div className="winning-card">
+                    <div className="card winning-card">
+                        <div className="card-body">
+                            <p className="card-title">Fish</p>
+                        </div>
+                    </div>
+                </div>
+            )
         }
     }
 }

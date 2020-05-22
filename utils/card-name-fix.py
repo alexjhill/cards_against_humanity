@@ -10,11 +10,11 @@ def create_id(id_length):
     return id
 
 
-filename = 'base.json'
+filename = '../../base_black.json'
 text_to_search = '{'
 
 for line in fileinput.input(filename, inplace=1):
-    replacement_text = '{\n\t\"_id\": \"' + create_id(24) + '\",'
+    replacement_text = '{\n\t\"id\": \"' + create_id(24) + '\",'
     if text_to_search in line:
         line = line.replace(text_to_search, replacement_text)
     sys.stdout.write(line)
