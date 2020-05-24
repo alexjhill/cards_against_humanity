@@ -35,11 +35,11 @@ class HandCards extends React.Component {
         });
     }
 
-    playCard(id, e) {
-        this.props.action(this.props.gameState, 1)
+    playCard(cardId, e) {
+        this.props.updateGame(1, 2)
         axios.post('/api/' + getCookie("game_id") + '/play_card', {
             player: getCookie("player_id"),
-            card_id: id
+            card_id: cardId
         })
         .catch(error => {
             // handle error
@@ -47,10 +47,11 @@ class HandCards extends React.Component {
         });
     }
 
-    pickWinner(playerId, e) {
-        this.props.action(3, 2)
+    pickWinner(playerId, cardId, e) {
+        this.props.updateGame(-1, this.props.playerState)
         axios.post('/api/' + getCookie("game_id") + '/pick_winner', {
-            player: playerId
+            player: playerId,
+            card: cardId
         })
         .catch(error => {
             // handle error
@@ -116,9 +117,9 @@ class HandCards extends React.Component {
                 return (
                     this.props.playedCards.map((cardPlay) =>
                         <li key={ cardPlay.player }>
-                            <div className="card hand-card" onClick={(e) => this.pickWinner(cardPlay.player, e)}>
+                            <div className="card hand-card" onClick={(e) => this.pickWinner(cardPlay.player, cardPlay.card.id, e)}>
                                 <div className="card-body">
-                                    <p className="card-title">{ cardPlay.card }</p>
+                                    <p className="card-title">{ cardPlay.card.text }</p>
                                 </div>
                             </div>
                         </li>
@@ -130,11 +131,13 @@ class HandCards extends React.Component {
                 <div className="winning-card">
                     <div className="card winning-card">
                         <div className="card-body">
-                            <p className="card-title">Fish</p>
+                            <p className="card-title">{ this.props.winningCard.text }</p>
                         </div>
                     </div>
                 </div>
             )
+        } else {
+            return <div className="loading-sprite"><div></div><div></div><div></div><div></div></div>
         }
     }
 }

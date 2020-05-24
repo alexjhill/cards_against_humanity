@@ -164,7 +164,7 @@
     } #hand-cards li:hover ~ li {
         transform: translateX(60%);
         transition: .2s;
-    } #hand-cards li:hover:not(:nth-child(10)) {
+    } #hand-cards li:hover:not(:nth-last-child(2)) {
         transform: translateX(-55%);
     } #hand-cards li .hand-card {
         position: relative;

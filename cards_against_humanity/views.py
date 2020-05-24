@@ -111,10 +111,10 @@ def game(game_id):
             resp.set_cookie('next', 'game/' + game_id)
             return resp
         else:
-            # add game to player
+            # add player to game
             player = Player.query.filter_by(id=player_id).first()
             if player:
-                player.game = game_id
+                game.players.append(player)
                 db.session.commit()
 
                 # return game page
