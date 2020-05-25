@@ -45,16 +45,16 @@ def get_players(game_id): # return all players matching this game
 @app.route('/api/<game_id>/new_black_card')
 def new_black_card(game_id): # return black card for this game
     black_card = Card.query.filter_by(type=1).order_by(func.random()).first()
-    game = Game.query.filter_by(id=game_id).first()
-    game.black_card = black_card
-    db.session.commit()
     return black_card.as_json()
 
 @app.route('/api/<game_id>/pick_black_card', methods=['POST'])
 def pick_black_card(game_id): # pick black card for this game
+    card_id = json.loads(request.data).get("card_id")
+    picked_black_card = Card.query.filter_by(id=card_id).first()
     game = Game.query.filter_by(id=game_id).first()
+    game.black_card = picked_black_card
     game.state = 1
-    game.used_cards.append(game.black_card)
+    game.used_cards.append(picked_black_card)
     db.session.commit()
     return ('', 204)
 
@@ -145,7 +145,6 @@ def new_round(game_id):
     # wipe played cards and reset game state
     game = Game.query.filter_by(id=game_id).first()
     game.state = 0
-    game.black_card = Card.query.filter_by(type=1).order_by(func.random()).first()
 
     # update players state
     players = Player.query.filter_by(game_id=game_id).all()
