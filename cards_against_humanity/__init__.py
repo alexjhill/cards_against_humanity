@@ -14,4 +14,5 @@ conn_str = 'mysql+pymysql://root:password1@localhost/cards-against-humanity'
 app.config['SQLALCHEMY_DATABASE_URI'] = conn_str
 db = SQLAlchemy(app)
 
+
 from cards_against_humanity import views, models, api

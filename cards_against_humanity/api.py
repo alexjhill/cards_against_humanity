@@ -153,8 +153,9 @@ def new_round(game_id):
         player.played_card = None
 
     # set new card tzar
-    card_tzar = Player.query.filter_by(game_id=game_id).first()
+    card_tzar = Player.query.filter_by(game_id=game_id).order_by(Player.turn).first()
     card_tzar.state = 2
+    card_tzar.turn += Player.query.filter_by(game_id=game_id).count()
 
     db.session.commit()
 
