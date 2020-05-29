@@ -1,7 +1,7 @@
-from cards_against_humanity import app
+from cards_against_humanity import app, db
 from flask import request, redirect, url_for
 import json
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, and_
 
 from cards_against_humanity.models import *
 from cards_against_humanity.views import logger
@@ -11,16 +11,20 @@ from cards_against_humanity.views import logger
 def get_game(game_id):
     game = Game.query.filter_by(id=game_id).first()
     player_id = request.cookies.get('player_id')
-    player_state = Player.query.filter_by(id=player_id).first().state
+
+    player_state = PlayerInGame.query.filter(player_id==player_id).filter(game_id==game_id).first().state
+
+    data = [game.as_json(), player_state]
 
     # get played cards from players who have played
-    played_cards = []
-    for player in game.players:
-        if player.state == 1:
-            played_cards.append({"player": player.id, "card": player.played_card.as_json()})
+    if game.state != 0:
+        played_cards = []
+        for assoc in game.players:
+            if assoc.state == 1:
+                played_cards.append({"player": assoc.player_id, "card": assoc.played_card.as_json()})
+        data.append(played_cards)
 
-    data = [game.as_json(), player_state, played_cards]
-
+    # if the round has finished
     if game.state == 3:
         # get the winner
         winner = game.winner.as_json()
@@ -30,16 +34,6 @@ def get_game(game_id):
         data.append(winning_card)
 
     # convert to JSON and return
-    return json.dumps(data)
-
-@app.route('/api/<game_id>/get_players')
-def get_players(game_id): # return all players matching this game
-    players = Player.query.filter_by(game_id=game_id).all()
-
-    # convert to JSON and return
-    data = []
-    for player in players:
-        data.append(player.as_json())
     return json.dumps(data)
 
 @app.route('/api/<game_id>/new_black_card')
@@ -61,15 +55,31 @@ def pick_black_card(game_id): # pick black card for this game
 @app.route('/api/<game_id>/get_black_card')
 def get_black_card(game_id): # return black card for this game
     game = Game.query.filter_by(id=game_id).first()
-    black_card = game.black_card
-    return black_card.as_json()
+    try:
+        black_card = game.black_card
+        return black_card.as_json()
+    except:
+        return ("", 204)
+
+@app.route('/api/<game_id>/get_players')
+def get_players(game_id): # return all players matching this game
+    players = db.session.query(PlayerInGame, Player).filter(PlayerInGame.player_id==Player.id).filter(PlayerInGame.game_id==game_id).all()
+
+    # convert to JSON and return
+    data = []
+    for player in players:
+        a = player[0].as_json()
+        b = player[1].as_json()
+        a.update(b)
+        data.append(a)
+    return json.dumps(data)
 
 @app.route('/api/<game_id>/get_cards')
 def get_cards(game_id): # return cards for this player
     player_id = request.cookies.get('player_id')
 
     # find cards for this player in this game
-    player = Player.query.filter_by(id=player_id).first()
+    player = PlayerInGame.query.filter_by(player_id=player_id).first()
 
     # if player doesn't have cards get random ones
     if not player.cards:

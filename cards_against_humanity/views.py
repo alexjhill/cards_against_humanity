@@ -94,8 +94,13 @@ def game(game_id):
             # if player is not in the database
             if player:
                 # otherwise, add to the game
-                game.players.append(player)
-                db.session.commit()
+                try:
+                    player_in_game = PlayerInGame(state=0, turn=0, score=0)
+                    player_in_game.player = player
+                    player_in_game.game = game
+                    db.session.commit()
+                except:
+                    logger.error("Player_in_game already made")
 
                 # return game page
                 resp = make_response(render_template('game.html'))
