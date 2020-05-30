@@ -12,8 +12,8 @@ def get_game(game_id):
     game = Game.query.filter_by(id=game_id).first()
     player_id = request.cookies.get('player_id')
 
-    player_state = PlayerInGame.query.filter(player_id==player_id).filter(game_id==game_id).first().state
-
+    player_state = PlayerInGame.query.filter(PlayerInGame.player_id == player_id, PlayerInGame.game_id == game_id).first().state
+    logger.debug(player_state)
     data = [game.as_json(), player_state]
 
     # get played cards from players who have played
@@ -106,24 +106,24 @@ def play_card(game_id):
     card = Card.query.filter_by(id=card_id).first()
 
     # remove played card from player
-    player = Player.query.filter_by(id=player_id).first()
-    player.cards.remove(card)
+    player_in_game = PlayerInGame.query.filter_by(player_id = player_id, game_id = game_id).first()
+    player_in_game.cards.remove(card)
 
     # update player state and played card
-    player.state = 1
-    player.played_card = card
+    player_in_game.state = 1
+    player_in_game.played_card = card
 
     # give player a unique new card and add to used cards
     random_card = Card.query.outerjoin(used_card).outerjoin(Game).filter(Card.type == 0).filter(or_(used_card.c.game_id == None, used_card.c.game_id != game_id)).order_by(func.random()).first()
     if random_card:
-        player.cards.append(random_card)
-        game = player.game
+        player_in_game.cards.append(random_card)
+        game = player_in_game.game
         game.used_cards.append(random_card)
     else:
         logger.debug("no cards that haven't been used left")
 
     # if no players left to play, next game state
-    still_to_play = Player.query.filter_by(game_id=game_id, state=0).count()
+    still_to_play = PlayerInGame.query.filter_by(game_id=game_id, state=0).count()
     if still_to_play == 0:
         game.state = 2
 
@@ -131,7 +131,7 @@ def play_card(game_id):
 
     # convert to JSON and return
     data = []
-    for card in player.cards:
+    for card in player_in_game.cards:
         data.append(card.as_json())
     return json.dumps(data)
 
@@ -150,22 +150,23 @@ def pick_winner(game_id):
     return ('', 204)
 
 
-@app.route('/api/<game_id>/new_round', methods=['POST'])
+@app.route('/api/<game_id>/new_round')
 def new_round(game_id):
     # wipe played cards and reset game state
     game = Game.query.filter_by(id=game_id).first()
     game.state = 0
+    game.turn += 1
 
     # update players state
-    players = Player.query.filter_by(game_id=game_id).all()
+    players = PlayerInGame.query.filter_by(game_id=game_id).all()
     for player in players:
         player.state = 0
         player.played_card = None
 
     # set new card tzar
-    card_tzar = Player.query.filter_by(game_id=game_id).order_by(Player.turn).first()
+    card_tzar = PlayerInGame.query.filter_by(game_id=game_id, turn=game.turn).first()
     card_tzar.state = 2
-    card_tzar.turn += Player.query.filter_by(game_id=game_id).count()
+    logger.debug(card_tzar)
 
     db.session.commit()
 

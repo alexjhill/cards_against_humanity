@@ -25,7 +25,6 @@ class BlackCard extends React.Component {
 
 
     newCard() {
-        console.log("new card")
         // Make a request for random black card
         axios.get('/api/' + getCookie("game_id") + '/new_black_card')
         .then(response => {
@@ -44,7 +43,6 @@ class BlackCard extends React.Component {
 
     // set black card
     pickCard(id, e) {
-        console.log("pick card")
         this.props.updateGame(1, this.props.playerState)
         axios.post('/api/' + getCookie("game_id") + '/pick_black_card', {
             card_id: id
@@ -56,7 +54,6 @@ class BlackCard extends React.Component {
     }
 
     getCard() {
-        console.log("get card")
         // Make a request for random black card
         axios.get('/api/' + getCookie("game_id") + '/get_black_card')
         .then(response => {

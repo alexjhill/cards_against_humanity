@@ -78,7 +78,7 @@ def new_game(): # create new game
 
     db.session.commit()
 
-    return redirect(url_for('game', game_id = game_id))
+    return redirect(url_for('new_round', game_id = game_id))
 
 
 
@@ -95,7 +95,8 @@ def game(game_id):
             if player:
                 # otherwise, add to the game
                 try:
-                    player_in_game = PlayerInGame(state=0, turn=0, score=0)
+                    player_turn = len(game.players) + 1
+                    player_in_game = PlayerInGame(state=0, turn=player_turn, score=0)
                     player_in_game.player = player
                     player_in_game.game = game
                     db.session.commit()
