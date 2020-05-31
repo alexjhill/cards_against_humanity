@@ -153,24 +153,25 @@ def pick_winner(game_id):
 
 @app.route('/api/<game_id>/new_round', methods=['GET', 'POST'])
 def new_round(game_id):
-    # update players state
-    players = PlayerInGame.query.filter_by(game_id=game_id).all()
-    for player in players:
-        player.state = 0
-        player.played_card = None
-
-    # wipe played cards and reset game state
     game = Game.query.filter_by(id=game_id).first()
-    game.state = 0
-    if game.turn == len(players):
-        game.turn = 1
-    else:
-        game.turn += 1
+    if game.state == 3:
+        # update players state
+        players = PlayerInGame.query.filter_by(game_id=game_id).all()
+        for player in players:
+            player.state = 0
+            player.played_card = None
 
-    # set new card tzar
-    card_tzar = PlayerInGame.query.filter_by(game_id=game_id, turn=game.turn).first()
-    card_tzar.state = 2
+        # wipe played cards and reset game state
+        game.state = 0
+        if game.turn == len(players):
+            game.turn = 1
+        else:
+            game.turn += 1
 
-    db.session.commit()
+        # set new card tzar
+        card_tzar = PlayerInGame.query.filter_by(game_id=game_id, turn=game.turn).first()
+        card_tzar.state = 2
+
+        db.session.commit()
 
     return redirect(url_for("game", game_id = game_id))
