@@ -59,7 +59,7 @@ class Root extends React.Component {
     }
 
     newRound() {
-        this.updateGame(0, this.state.playerState)
+        this.updateGame(-1, -1)
         axios.post('/api/' + getCookie("game_id") + '/new_round')
         .catch(error => {
             // handle error
@@ -68,7 +68,9 @@ class Root extends React.Component {
     }
 
     render() {
-        if (this.state.gameState === 3) {
+        if (this.state.gameState === -1) {
+            return <div className="page-loading-sprite"><div className="loading-sprite"><div></div><div></div><div></div><div></div></div></div>
+        } else if (this.state.gameState === 3) {
             return (
                 <React.Fragment>
                     <div className="row justify-content-md-center">

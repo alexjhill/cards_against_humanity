@@ -36,7 +36,7 @@ class HandCards extends React.Component {
     }
 
     playCard(cardId, e) {
-        this.props.updateGame(1, 2)
+        this.props.updateGame(1, 1)
         axios.post('/api/' + getCookie("game_id") + '/play_card', {
             player: getCookie("player_id"),
             card_id: cardId
@@ -48,7 +48,7 @@ class HandCards extends React.Component {
     }
 
     pickWinner(playerId, cardId, e) {
-        this.props.updateGame(-1, this.props.playerState)
+        this.props.updateGame(-1, 2)
         axios.post('/api/' + getCookie("game_id") + '/pick_winner', {
             player: playerId,
             card: cardId

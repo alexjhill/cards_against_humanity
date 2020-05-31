@@ -71,8 +71,8 @@ class BlackCard extends React.Component {
     }
 
     render() {
-        if (this.props.gameState == 0) { // black card selection
-            if (this.props.playerState == 0) {
+        if (this.props.gameState === 0) { // black card selection
+            if (this.props.playerState === 0) {
                 return (
                     <div className="float-right">
                         <div className="">
@@ -82,9 +82,9 @@ class BlackCard extends React.Component {
                         </div>
                     </div>
                 )
-            } else if (this.props.playerState == 1) {
+            } else if (this.props.playerState === 1) {
                 return <div className="loading-sprite"><div></div><div></div><div></div><div></div></div>
-            } else if (this.props.playerState == 2) {
+            } else if (this.props.playerState === 2) {
                 return (
                     <div className="black-card">
                         <div className="card">

@@ -58,9 +58,11 @@ def set_name(): # set player name if player hasn't done so before
         db.session.add(new_player)
         db.session.commit()
 
-        # redirect back to game
+        # redirect back to original route
         game_id = request.cookies.get('game_id')
-        resp = make_response(redirect(url_for('game', game_id = game_id)))
+        next = request.cookies.get('next')
+        logger.debug(next)
+        resp = make_response(redirect(url_for(next, game_id = game_id)))
         resp.set_cookie('player_id', player_id)
         return resp
     else:
@@ -68,17 +70,40 @@ def set_name(): # set player name if player hasn't done so before
 
 @app.route('/new_game')
 def new_game(): # create new game
-    # create new unique game
-    game_id = create_id(5)
-    while Game.query.filter_by(id=game_id).first() is not None:
-        logger.warning('Game ID already exists')
-        game_id = create_id(5)
-    new_game = Game(id=game_id, state=0, turn=0)
-    db.session.add(new_game)
 
-    db.session.commit()
+    player_id = request.cookies.get('player_id')
+    # if player has no cookie
+    if player_id:
+        # otherwise, add player to game
+        player = Player.query.filter_by(id=player_id).first()
+        # if player is not in the database
+        if player:
+            # create new unique game
+            game_id = create_id(5)
+            while Game.query.filter_by(id=game_id).first() is not None:
+                logger.warning('Game ID already exists')
+                game_id = create_id(5)
+            new_game = Game(id=game_id, state=0, turn=0)
+            db.session.add(new_game)
 
-    return redirect(url_for('new_round', game_id = game_id))
+            player_in_game = PlayerInGame(state=0, turn=1, score=0)
+            player_in_game.player = player
+            player_in_game.game = new_game
+            db.session.add(player_in_game)
+
+            db.session.commit()
+
+            return redirect(url_for('new_round', game_id = game_id))
+        else:
+            # make a new one
+            resp = make_response(redirect(url_for('set_name')))
+            resp.set_cookie('next', 'new_game')
+            return resp
+    else:
+        # make a new one
+        resp = make_response(redirect(url_for('set_name')))
+        resp.set_cookie('next', 'new_game')
+        return resp
 
 
 
@@ -99,6 +124,7 @@ def game(game_id):
                     player_in_game = PlayerInGame(state=0, turn=player_turn, score=0)
                     player_in_game.player = player
                     player_in_game.game = game
+                    db.session.add(player_in_game)
                     db.session.commit()
                 except:
                     logger.error("Player_in_game already made")
@@ -110,11 +136,13 @@ def game(game_id):
             else:
                 # make a new one
                 resp = make_response(redirect(url_for('set_name')))
+                resp.set_cookie('next', 'game')
                 resp.set_cookie('game_id', game_id)
                 return resp
         else:
             # make a new one
             resp = make_response(redirect(url_for('set_name')))
+            resp.set_cookie('next', 'game')
             resp.set_cookie('game_id', game_id)
             return resp
     else:

@@ -2,12 +2,16 @@
 
 {% block content %}
 
-<form action="/set_name" method="POST">
-    <div class="form-group">
-        <label for="card-text">What should we call you?</label>
-        <input type="text" class="form-control" name="name" id="name" aria-describedby="card-text">
-    </div>
-    <button type="submit" class="btn btn-primary">Let's go!</button>
-</form>
+<div class="row mt-3">
+    <div class="col-md-6">
+        <h1>Give yourself a name!</h1>
+    <form action="/set_name" method="POST">
+        <div class="form-group">
+            <label for="card-text">What should we call you?</label>
+            <input type="text" class="form-control" name="name" id="name" aria-describedby="card-text">
+        </div>
+        <button type="submit" class="btn btn-primary">Let's go!</button>
+    </form>
+</div>
 
 {% endblock %}

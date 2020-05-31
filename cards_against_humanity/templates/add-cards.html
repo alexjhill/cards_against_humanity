@@ -2,12 +2,17 @@
 
 {% block content %}
 
-<form action="/add_cards" method="POST">
-    <div class="form-group">
-        <label for="card-text">Card text</label>
-        <textarea type="text" class="form-control" name="card-text" id="card-text" aria-describedby="card-text" placeholder="Enter card text"></textarea>
+<div class="row mt-3">
+    <div class="col-md-6">
+        <h1>Add a new white card!</h1>
+        <form action="/add_cards" method="POST">
+            <div class="form-group">
+                <label for="card-text">Card text</label>
+                <textarea type="text" class="form-control" name="card-text" id="card-text" aria-describedby="card-text" placeholder="Enter card text"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
     </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
-</form>
+</div>
 
 {% endblock %}
