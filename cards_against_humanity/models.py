@@ -75,7 +75,7 @@ class Card(db.Model):
     used_in = db.relationship("Game", secondary="used_card") # many-to-many (child)
 
     def __repr__(self):
-        return "<Card '{1}'>".format(self.text)
+        return "<Card '{0}'>".format(self.text)
 
     def as_json(self):
         return dict(id=self.id, text=self.text, type=self.type)

@@ -86,7 +86,7 @@ def new_game(): # create new game
             new_game = Game(id=game_id, state=0, turn=0)
             db.session.add(new_game)
 
-            player_in_game = PlayerInGame(state=0, turn=1, score=0)
+            player_in_game = PlayerInGame(state=2, turn=1, score=0)
             player_in_game.player = player
             player_in_game.game = new_game
             db.session.add(player_in_game)
