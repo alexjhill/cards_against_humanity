@@ -4,7 +4,7 @@
 
 All the data for the cards was taken from the [JSON Against Humanity API](https://www.crhallberg.com/cah/). CAH is distributed under Creative Commons, [as described in their FAQs](https://cardsagainsthumanity.com/#info), making this all legal as long as I don't make any money from it (so please don't send me any).
 
-![Cards Against Humanity Online interface](cards-against-humanity.gif)
+![Cards Against Humanity Online interface](cah.gif)
 
 * Flask
 * ReactJS
